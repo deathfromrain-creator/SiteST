@@ -4,15 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Robokassa ЛТС — Invoice API</title>
-  <!--
-    Invoice API (JWT): CreateInvoice + режим «Разбор».
-    Схема payload взята из https://docs.robokassa.ru/openapi/robokassa.yaml
-    (components.schemas.InvoiceCreatePayload), сверено 2026-09-21.
-    Receipt Attach (второй чек): docs.robokassa.ru/ru/second-receipt, сверено 2026-09-24.
-    Refund: docs.robokassa.ru/ru/refund-api + RefundPayload из yaml, сверено 2026-09-24.
-    Хеш-функции скопированы из index.html без изменений.
-    UI: скил robokassa-lts-ui. API/подписи: скил robokassa-api.
-  -->
+  
   <style>
     :root {
       --bg: #f4efe9;
@@ -207,11 +199,12 @@
 </head>
 <body>
   <div class="app">
-    <header class="app-head">
+     <header class="app-head">
       <div class="brand"><strong>Robokassa ЛТС</strong></div>
       <nav>
         <a href="./index.html">Index.aspx</a>
         <a class="active" href="./invoice.html">Invoice API</a>
+        <a href="./hmac%20+MD5.html">Расчет HMAC</a>
         <span class="soon">OpState</span>
         <span class="soon">Подпись Result</span>
       </nav>
