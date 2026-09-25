@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="ru">
+    <head>
+        <meta charset="UTF-8" />
+        <title>HMAC Generator</title>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.2.0/crypto-js.min.js"></script>
+
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 600px;
+                margin: 40px auto;
+                padding: 0 15px;
+            }
+
+            textarea,
+            input,
+            select {
+                width: 100%;
+                margin-bottom: 10px;
+                padding: 8px;
+                box-sizing: border-box;
+            }
+
+            button {
+                width: 100%;
+                padding: 10px;
+                cursor: pointer;
+            }
+
+            pre {
+                background: #f4f4f4;
+                padding: 10px;
+                word-break: break-all;
+                white-space: pre-wrap;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>HMAC Generator</h2>
+
+        <textarea id="message" rows="5" placeholder="Строка"></textarea>
+
+        <input id="key" placeholder="Secret key" />
+
+        <select id="algo">
+            <option value="MD5">HMAC-MD5</option>
+            <option value="SHA-1">HMAC-SHA1</option>
+            <option value="SHA-256" selected>HMAC-SHA256</option>
+            <option value="SHA-384">HMAC-SHA384</option>
+            <option value="SHA-512">HMAC-SHA512</option>
+        </select>
+
+        <button onclick="generate()">Сгенерировать</button>
+
+        <pre id="result"></pre>
+
+        <script>
+            async function generate() {
+                const message = document.getElementById("message").value;
+                const key = document.getElementById("key").value;
+                const algo = document.getElementById("algo").value;
+
+                if (!key) {
+                    alert("Введите Secret key");
+                    return;
+                }
+
+                let result;
+
+                if (algo === "MD5") {
+                    result = CryptoJS.HmacMD5(message, key).toString(
+                        CryptoJS.enc.Hex,
+                    );
+                } else {
+                    const enc = new TextEncoder();
+
+                    const cryptoKey = await crypto.subtle.importKey(
+                        "raw",
+                        enc.encode(key),
+                        {
+                            name: "HMAC",
+                            hash: { name: algo },
+                        },
+                        false,
+                        ["sign"],
+                    );
+
+                    const signature = await crypto.subtle.sign(
+                        "HMAC",
+                        cryptoKey,
+                        enc.encode(message),
+                    );
+
+                    result = Array.from(new Uint8Array(signature))
+                        .map((b) => b.toString(16).padStart(2, "0"))
+                        .join("");
+                }
+
+                document.getElementById("result").textContent = result;
+            }
+        </script>
+    </body>
+</html>
