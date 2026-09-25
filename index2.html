@@ -1,0 +1,2093 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Robokassa ЛТС — Index.aspx</title>
+  <style>
+    :root {
+      --bg: #f4efe9;
+      --paper: #fffdfb;
+      --ink: #1f1a17;
+      --muted: #6b615a;
+      --line: #e6ddd4;
+      --orange: #e85d04;
+      --orange-deep: #c2410c;
+      --ok: #0f7b4c;
+      --warn: #b45309;
+      --err: #b42318;
+      --chip: #fff4eb;
+      --mono: "Cascadia Code", "Consolas", "SFMono-Regular", ui-monospace, monospace;
+      --sans: "Segoe UI", system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.45 var(--sans); }
+    a { color: var(--orange-deep); }
+    .app { max-width: 1280px; margin: 0 auto; padding: 20px 16px 40px; }
+    header.app-head {
+      display: flex; flex-wrap: wrap; gap: 12px 24px;
+      align-items: center; justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .brand strong { font-size: 20px; letter-spacing: -0.03em; }
+    nav { display: flex; flex-wrap: wrap; gap: 8px; }
+    nav a, nav span {
+      display: inline-flex; align-items: center; padding: 7px 12px;
+      border-radius: 999px; text-decoration: none; font-size: 13px; font-weight: 600;
+    }
+    nav a.active { background: var(--ink); color: #fff; }
+    nav span.soon { background: #efe8e1; color: #8a8078; }
+    .grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 16px; align-items: start; }
+    @media (max-width: 820px) { .grid { grid-template-columns: 1fr; } }
+    .card {
+      background: var(--paper); border: 1px solid var(--line); border-radius: 16px;
+      padding: 18px; box-shadow: 0 8px 24px rgba(31, 26, 23, 0.04);
+    }
+    .sticky { position: sticky; top: 12px; }
+    h2 { margin: 0 0 14px; font-size: 16px; }
+    h3 { margin: 0 0 10px; font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .fields { display: grid; gap: 12px; }
+    .row { display: grid; gap: 4px; justify-items: stretch; }
+    .row.inline { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .row.exp { grid-template-columns: minmax(0, 1fr) 72px 72px; gap: 8px; }
+    .row.url2 { grid-template-columns: minmax(0, 1fr) 100px; gap: 8px; }
+    @media (max-width: 640px) {
+      .row.inline, .row.exp, .row.url2 { grid-template-columns: 1fr; }
+    }
+    label { display: block; margin: 0; padding: 0; text-align: left; font-size: 13.5px; font-weight: 600; line-height: 1.2; }
+    input[type="text"], input[type="password"], input[type="number"], input[type="email"],
+    input[type="url"], input[type="date"], select, textarea {
+      width: 100%; border: 1px solid var(--line); border-radius: 10px;
+      padding: 10px 12px; font: 14px/1.4 var(--sans); background: #fff; color: var(--ink);
+    }
+    textarea { min-height: 88px; resize: vertical; font-family: var(--mono); font-size: 13px; }
+    input:focus, select:focus, textarea:focus { outline: 2px solid #fdba74; border-color: var(--orange); }
+    .pass-wrap { display: flex; gap: 8px; }
+    .pass-wrap input { flex: 1; }
+    .check {
+      display: flex; align-items: center; gap: 8px; padding: 10px 12px;
+      border: 1px solid var(--line); border-radius: 10px; background: #fff; font-size: 13.5px; font-weight: 600;
+    }
+    .check.live { background: #fff7ed; border-color: #fed7aa; }
+    .checks { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    button, .btn {
+      border: 0; border-radius: 10px; padding: 10px 14px; font: 600 13px var(--sans);
+      cursor: pointer; background: var(--ink); color: #fff;
+    }
+    button.primary { background: var(--orange); }
+    button.primary:hover { background: var(--orange-deep); }
+    button.ghost, .btn.ghost { background: #efe8e1; color: var(--ink); }
+    button.small { padding: 6px 10px; font-size: 12px; }
+    details.opt {
+      margin-top: 16px; border: 1px dashed #d9cfc4; border-radius: 12px; padding: 4px 12px 12px;
+      background: #fbf8f5;
+    }
+    details.opt > summary {
+      cursor: pointer; font-weight: 700; padding: 12px 4px; list-style: none;
+    }
+    details.opt label:not(.check) { color: var(--muted); }
+    .opt-stack { display: grid; gap: 0; margin-top: 2px; }
+    details.opt.sec {
+      margin: 0; border: 0; border-radius: 0; padding: 0 0 2px; background: transparent;
+    }
+    details.opt.sec > summary {
+      color: var(--muted); font-size: 13px; font-weight: 600; padding: 10px 2px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    details.opt.nested {
+      margin: 8px 0 0; padding: 2px 10px 10px;
+    }
+    details.opt.nested > summary {
+      color: var(--muted); font-size: 13px; font-weight: 600; padding: 8px 2px;
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    details.opt.nested.receipt {
+      margin: 0; border: 1px solid var(--line); border-radius: 10px;
+      background: #fff; padding: 4px 12px 12px;
+    }
+    details.opt.nested.receipt > summary {
+      color: var(--ink); font-size: 13.5px; font-weight: 600; padding: 10px 2px;
+      text-transform: none; letter-spacing: 0;
+    }
+    .fiscal-extra { display: grid; gap: 6px; margin-top: 4px; }
+    .fiscal-extra .check {
+      padding: 2px 0; border: 0; background: transparent; border-radius: 0;
+      font-size: 12px; font-weight: 500; color: var(--muted);
+    }
+    .fiscal-extra label { font-size: 12px; font-weight: 500; }
+    .fiscal-extra input[type="text"] { padding: 6px 8px; font-size: 13px; }
+    .rcpt-item {
+      border: 1px solid var(--line); border-radius: 10px; padding: 10px; background: #fff;
+      display: grid; gap: 8px; margin-bottom: 8px;
+    }
+    .rcpt-item .head { display: flex; justify-content: space-between; align-items: center; }
+    details.opt > summary::-webkit-details-marker { display: none; }
+    details.opt > summary::before { content: "▸ "; color: var(--orange); }
+    details.opt[open] > summary::before { content: "▾ "; }
+    .seg {
+      display: inline-flex; padding: 3px; background: #efe8e1; border-radius: 10px; gap: 2px;
+    }
+    .seg button { background: transparent; color: var(--ink); padding: 7px 12px; }
+    .seg button.on { background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+    .result-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; }
+    .out {
+      background: #1f1a17; color: #f8efe6; border-radius: 12px; padding: 12px;
+      font: 12px/1.5 var(--mono); word-break: break-all; white-space: pre-wrap;
+      min-height: 72px; max-height: 240px; overflow: auto;
+    }
+    .out.plain { background: #f7f1ea; color: var(--ink); border: 1px solid var(--line); }
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin: 14px 0 6px; gap: 8px; }
+    .label-row h3 { margin: 0; }
+    .parts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .parts code {
+      display: inline-block; padding: 3px 7px; border-radius: 6px; font: 11px var(--mono);
+      background: var(--chip); color: #9a3412;
+    }
+    .warn, .err, .ok {
+      padding: 8px 10px; border-radius: 8px; font-size: 13px; margin-top: 8px;
+    }
+    .warn { background: #fff7ed; color: var(--warn); }
+    .err { background: #fef3f2; color: var(--err); }
+    .ok { background: #ecfdf3; color: var(--ok); }
+    .shp-row, .pm-row { display: grid; grid-template-columns: 1fr 1fr auto; gap: 8px; margin-bottom: 8px; }
+    .pm-row { grid-template-columns: 1fr auto; }
+    .hidden { display: none !important; }
+    .seg.modes { margin-bottom: 14px; }
+    .seg.modes button { padding: 8px 18px; font-size: 13.5px; }
+    button:disabled { opacity: .45; cursor: not-allowed; }
+    textarea.tall { min-height: 150px; }
+    .hint { font-size: 12px; color: var(--muted); margin-top: -2px; }
+    .sig-chip {
+      display: inline-block; padding: 3px 8px; border-radius: 999px;
+      font: 11px var(--sans); font-weight: 700;
+    }
+    .sig-chip.ok { background: #ecfdf3; color: var(--ok); }
+    .sig-chip.bad { background: #fef3f2; color: var(--err); }
+    .sig-chip.na { background: #efe8e1; color: var(--muted); }
+    .finds { display: grid; gap: 7px; }
+    .find {
+      padding: 9px 11px; border-left: 3px solid; border-radius: 0 8px 8px 0;
+      font-size: 13px; line-height: 1.4;
+    }
+    .find b { display: block; font-weight: 700; }
+    .find span { color: inherit; opacity: .85; }
+    .find code { font: 11.5px var(--mono); background: rgba(0,0,0,.05); padding: 1px 4px; border-radius: 4px; }
+    .find.e { background: #fef3f2; border-color: var(--err); color: var(--err); }
+    .find.w { background: #fff7ed; border-color: var(--warn); color: var(--warn); }
+    .find.o { background: #ecfdf3; border-color: var(--ok); color: var(--ok); }
+    .find.i { background: #f7f1ea; border-color: #cbbfb3; color: var(--muted); }
+    .param-table { width: 100%; border-collapse: collapse; font: 12px var(--mono); }
+    .param-table td { padding: 4px 6px; border-bottom: 1px solid var(--line); vertical-align: top; word-break: break-all; }
+    .param-table td:first-child { width: 34%; color: var(--muted); white-space: nowrap; }
+    .param-table tr.sig td:first-child { color: var(--orange-deep); }
+    .html-opts { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0; }
+    .html-opts .check { padding: 8px 10px; }
+    .html-preview {
+      width: 100%; min-height: 64px; height: auto; border: 1px solid var(--line); border-radius: 12px;
+      background: #fff; margin-top: 8px; padding: 14px;
+    }
+    .html-preview button[type="submit"] { background: var(--orange); }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="app-head">
+      <div class="brand"><strong>Robokassa ЛТС</strong></div>
+      <nav>
+        <a class="active" href="./index.html">Index.aspx</a>
+        <a href="./invoice.html">Invoice API</a>
+        <span class="soon">OpState</span>
+        <span class="soon">Подпись Result</span>
+      </nav>
+    </header>
+
+    <div class="seg modes" id="modeSeg">
+      <button type="button" class="on" data-mode="build">Конструктор</button>
+      <button type="button" data-mode="check">Разбор</button>
+    </div>
+
+    <div class="grid" id="buildMode">
+      <section class="card">
+        <h2>Merchant/Index.aspx</h2>
+        <div class="fields">
+          <div class="row">
+            <label>MerchantLogin</label>
+            <input id="MerchantLogin" type="text" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="row">
+            <label>Пароль #1</label>
+            <div class="pass-wrap">
+              <input id="Password1" type="password" autocomplete="off" spellcheck="false" />
+              <button type="button" class="ghost small" id="togglePass">Показать</button>
+            </div>
+          </div>
+          <div class="row inline">
+            <div class="row">
+              <label>OutSum</label>
+              <input id="OutSum" type="text" inputmode="decimal" />
+            </div>
+            <div class="row">
+              <label>InvId</label>
+              <input id="InvId" type="text" inputmode="numeric" />
+            </div>
+          </div>
+          <div class="row inline">
+            <label class="check" id="isTestBox">
+              <input id="IsTest" type="checkbox" />
+              IsTest
+            </label>
+            <div class="row">
+              <label>Hash</label>
+              <select id="HashAlgo">
+                <option value="md5" selected>MD5</option>
+                <option value="ripemd160">RIPEMD160</option>
+                <option value="sha1">SHA1</option>
+                <option value="sha256">SHA256</option>
+                <option value="sha384">SHA384</option>
+                <option value="sha512">SHA512</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <details class="opt" id="optionalBlock">
+          <summary>Необязательные параметры</summary>
+          <div class="opt-stack">
+            <details class="opt sec">
+              <summary>Основные</summary>
+              <div class="fields">
+                <div class="row">
+                  <label>Description</label>
+                  <input id="Description" type="text" maxlength="100" />
+                </div>
+                <div class="row inline">
+                  <div class="row">
+                    <label>Email</label>
+                    <input id="Email" type="email" />
+                  </div>
+                  <div class="row">
+                    <label>Encoding</label>
+                    <input id="Encoding" type="text" />
+                  </div>
+                </div>
+                <div class="row">
+                  <label>Culture</label>
+                  <select id="Culture">
+                    <option value=""></option>
+                    <option value="ru">ru</option>
+                    <option value="en">en</option>
+                  </select>
+                </div>
+                <div class="row exp">
+                  <div class="row">
+                    <label>ExpirationDate</label>
+                    <input id="ExpirationDate" type="date" />
+                  </div>
+                  <div class="row">
+                    <label>ЧЧ</label>
+                    <input id="ExpirationHH" type="text" inputmode="numeric" maxlength="2" />
+                  </div>
+                  <div class="row">
+                    <label>ММ</label>
+                    <input id="ExpirationMM" type="text" inputmode="numeric" maxlength="2" />
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="opt sec">
+              <summary>Способы оплаты</summary>
+              <div class="fields">
+                <div class="row">
+                  <label>IncCurrLabel</label>
+                  <input id="IncCurrLabel" type="text" />
+                </div>
+                <div class="row">
+                  <label>PaymentMethods</label>
+                  <div id="pmList"></div>
+                  <button type="button" class="ghost small" id="addPm">+</button>
+                </div>
+              </div>
+            </details>
+
+            <details class="opt sec">
+              <summary>Фискализация</summary>
+              <div class="fields">
+                <details class="opt nested receipt" id="receiptBlock">
+                  <summary>Receipt</summary>
+                  <div class="seg" id="receiptMode" style="margin: 6px 0 8px">
+                    <button type="button" class="on" data-rmode="raw">raw</button>
+                    <button type="button" data-rmode="todo">todo</button>
+                  </div>
+                  <div id="receiptRaw">
+                    <textarea id="Receipt"></textarea>
+                  </div>
+                  <div id="receiptTodo" class="hidden">
+                    <div class="row" style="margin-bottom:8px">
+                      <label>sno</label>
+                      <select id="ReceiptSno">
+                        <option value=""></option>
+                        <option value="osn">osn</option>
+                        <option value="usn_income">usn_income</option>
+                        <option value="usn_income_outcome">usn_income_outcome</option>
+                        <option value="esn">esn</option>
+                        <option value="patent">patent</option>
+                      </select>
+                    </div>
+                    <div id="rcptList"></div>
+                    <button type="button" class="ghost small" id="addRcpt">+</button>
+                  </div>
+                </details>
+                <div class="fiscal-extra">
+                  <label class="check">
+                    <input id="IsWithoutFreeSale" type="checkbox" />
+                    IsWithoutFreeSale
+                  </label>
+                  <div class="row">
+                    <label>FiscalParentOpId</label>
+                    <input id="FiscalParentOpId" type="text" inputmode="numeric" />
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="opt sec">
+              <summary>Холд / рекуррент / CoF</summary>
+              <div class="fields">
+                <div class="checks">
+                  <label class="check">
+                    <input id="StepByStep" type="checkbox" />
+                    StepByStep
+                  </label>
+                  <label class="check">
+                    <input id="Recurring" type="checkbox" />
+                    Recurring
+                  </label>
+                </div>
+                <div class="row">
+                  <label>Token</label>
+                  <input id="Token" type="text" spellcheck="false" />
+                </div>
+              </div>
+            </details>
+
+            <details class="opt sec">
+              <summary>URL2</summary>
+              <div class="fields">
+                <div class="row">
+                  <label>ResultUrl2</label>
+                  <input id="ResultUrl2" type="url" />
+                </div>
+                <div class="row url2">
+                  <div class="row">
+                    <label>SuccessUrl2</label>
+                    <input id="SuccessUrl2" type="url" />
+                  </div>
+                  <div class="row">
+                    <label>Method</label>
+                    <select id="SuccessUrl2Method">
+                      <option value="GET">GET</option>
+                      <option value="POST">POST</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="row url2">
+                  <div class="row">
+                    <label>FailUrl2</label>
+                    <input id="FailUrl2" type="url" />
+                  </div>
+                  <div class="row">
+                    <label>Method</label>
+                    <select id="FailUrl2Method">
+                      <option value="GET">GET</option>
+                      <option value="POST">POST</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            </details>
+
+            <details class="opt sec">
+              <summary>Shp_*</summary>
+              <div id="shpList"></div>
+              <button type="button" class="ghost small" id="addShp">+</button>
+            </details>
+          </div>
+        </details>
+
+        <div class="actions">
+          <button type="button" class="primary" id="resetBtn">Очистить</button>
+        </div>
+        <div id="formMsg"></div>
+      </section>
+
+      <aside class="card sticky">
+        <div class="result-head">
+          <h2 style="margin:0">Результат</h2>
+          <div class="seg" id="formatSeg">
+            <button type="button" class="on" data-fmt="get">GET</button>
+            <button type="button" data-fmt="post">POST</button>
+            <button type="button" data-fmt="html">HTML</button>
+          </div>
+        </div>
+
+        <div id="htmlOpts" class="html-opts hidden">
+          <label class="check"><input id="htmlFull" type="checkbox" checked /> полный HTML</label>
+          <label class="check"><input id="htmlBtn" type="checkbox" checked /> кнопка</label>
+        </div>
+
+        <div class="label-row">
+          <h3 id="linkTitle">GET</h3>
+          <div>
+            <button type="button" class="ghost small" id="copyLink">Копировать</button>
+            <button type="button" class="ghost small hidden" id="downloadHtml">Скачать</button>
+            <button type="button" class="small" id="openPay">Открыть</button>
+          </div>
+        </div>
+        <div class="out" id="linkOut"></div>
+        <div id="linkMeta"></div>
+        <form id="htmlPreview" class="html-preview hidden" method="POST" action="https://auth.robokassa.ru/Merchant/Index.aspx" target="_blank"></form>
+
+        <div class="label-row">
+          <h3>SignatureValue</h3>
+          <button type="button" class="ghost small" id="copySig">Копировать</button>
+        </div>
+        <div class="out" id="sigOut">—</div>
+        <div id="algoNote"></div>
+
+        <div class="label-row">
+          <h3>База подписи</h3>
+          <button type="button" class="ghost small" id="copyBase">Копировать</button>
+        </div>
+        <div class="out plain" id="baseOut">—</div>
+        <div class="parts" id="baseParts"></div>
+      </aside>
+    </div>
+
+    <div class="grid hidden" id="checkMode">
+      <section class="card">
+        <h2>Что прислал клиент</h2>
+        <div class="fields">
+          <div class="row">
+            <label>Ссылка, тело POST, HTML-форма, curl или список параметров</label>
+            <textarea id="rawIn" class="tall" spellcheck="false" placeholder="https://auth.robokassa.ru/Merchant/Index.aspx?MerchantLogin=demo&amp;OutSum=990.00&amp;..."></textarea>
+          </div>
+          <div class="row">
+            <label>Пароль #1</label>
+            <div class="pass-wrap">
+              <input id="cPass1" type="password" autocomplete="off" spellcheck="false" />
+              <button type="button" class="ghost small" id="cTogglePass">Показать</button>
+            </div>
+            <div class="hint">Для подписи. При <code>IsTest=1</code> — тестовый.</div>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="primary" id="resetCheck">Очистить</button>
+          <button type="button" class="ghost" id="toBuilder" disabled>Загрузить в конструктор</button>
+        </div>
+      </section>
+
+      <aside class="card sticky">
+        <div class="result-head">
+          <h2 style="margin:0">Диагностика</h2>
+          <span class="sig-chip na" id="sigChip">подпись не проверена</span>
+        </div>
+        <div class="finds" id="findings">
+          <div class="find i"><b>Пусто</b><span>Вставь ссылку или параметры слева.</span></div>
+        </div>
+
+        <div class="label-row">
+          <h3>Ожидаемая база подписи</h3>
+          <button type="button" class="ghost small" data-copy="cBaseOut">Копировать</button>
+        </div>
+        <div class="out plain" id="cBaseOut">—</div>
+        <div class="parts" id="cBaseParts"></div>
+
+        <div class="label-row">
+          <h3 id="cSigTitle">Подпись</h3>
+          <button type="button" class="ghost small" data-copy="cSigOut">Копировать</button>
+        </div>
+        <div class="out" id="cSigOut">—</div>
+
+        <div class="label-row"><h3>Разобранные параметры</h3></div>
+        <div class="out plain" id="cParams" style="max-height:280px">—</div>
+      </aside>
+    </div>
+  </div>
+
+  <form id="postForm" class="hidden" method="POST" action="https://auth.robokassa.ru/Merchant/Index.aspx" target="_blank"></form>
+
+  <script>
+    const PAY_URL = "https://auth.robokassa.ru/Merchant/Index.aspx";
+    const IDS = [
+      "MerchantLogin", "Password1", "OutSum", "InvId", "IsTest", "HashAlgo",
+      "Description", "Email", "Encoding", "Culture", "ExpirationDate", "ExpirationHH", "ExpirationMM",
+      "IncCurrLabel", "Receipt", "ReceiptSno", "IsWithoutFreeSale", "FiscalParentOpId",
+      "StepByStep", "Recurring", "Token",
+      "ResultUrl2", "SuccessUrl2", "SuccessUrl2Method", "FailUrl2", "FailUrl2Method"
+    ];
+
+    const state = { fmt: "get", result: null, rmode: "raw" };
+
+    const $ = (id) => document.getElementById(id);
+    const val = (id) => ($(id).value || "").trim();
+    const checked = (id) => $(id).checked;
+
+    function utf8(str) {
+      return new TextEncoder().encode(str);
+    }
+    function hex(bytes) {
+      return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
+    }
+    function rotl(x, n) {
+      return ((x << n) | (x >>> (32 - n))) >>> 0;
+    }
+
+    function md5(bytes) {
+      const orig = bytes.length;
+      const tail = (((orig + 8) >> 6) + 1) * 64;
+      const buf = new Uint8Array(tail);
+      buf.set(bytes);
+      buf[orig] = 0x80;
+      const dv = new DataView(buf.buffer);
+      dv.setUint32(tail - 8, orig * 8, true);
+      let a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+      const s = [7,12,17,22, 5,9,14,20, 4,11,16,23, 6,10,15,21];
+      const K = new Uint32Array(64);
+      for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 2 ** 32) >>> 0;
+      for (let i = 0; i < tail; i += 64) {
+        let A = a0, B = b0, C = c0, D = d0;
+        const M = new Uint32Array(16);
+        for (let j = 0; j < 16; j++) M[j] = dv.getUint32(i + j * 4, true);
+        for (let j = 0; j < 64; j++) {
+          let F, g;
+          if (j < 16) { F = (B & C) | (~B & D); g = j; }
+          else if (j < 32) { F = (D & B) | (~D & C); g = (5 * j + 1) % 16; }
+          else if (j < 48) { F = B ^ C ^ D; g = (3 * j + 5) % 16; }
+          else { F = C ^ (B | ~D); g = (7 * j) % 16; }
+          const tmp = D;
+          D = C; C = B;
+          B = (B + rotl((A + F + K[j] + M[g]) >>> 0, s[j % 4 + (j >> 4) * 4])) >>> 0;
+          A = tmp;
+        }
+        a0 = (a0 + A) >>> 0; b0 = (b0 + B) >>> 0; c0 = (c0 + C) >>> 0; d0 = (d0 + D) >>> 0;
+      }
+      const out = new DataView(new ArrayBuffer(16));
+      out.setUint32(0, a0, true); out.setUint32(4, b0, true);
+      out.setUint32(8, c0, true); out.setUint32(12, d0, true);
+      return new Uint8Array(out.buffer);
+    }
+
+    function sha1(bytes) {
+      const orig = bytes.length;
+      const bit = orig * 8;
+      const tail = ((((orig + 8) >> 6) + 1) * 64);
+      const buf = new Uint8Array(tail);
+      buf.set(bytes); buf[orig] = 0x80;
+      const dv = new DataView(buf.buffer);
+      dv.setUint32(tail - 4, bit >>> 0, false);
+      let h0 = 0x67452301, h1 = 0xefcdab89, h2 = 0x98badcfe, h3 = 0x10325476, h4 = 0xc3d2e1f0;
+      for (let i = 0; i < tail; i += 64) {
+        const w = new Uint32Array(80);
+        for (let j = 0; j < 16; j++) w[j] = dv.getUint32(i + j * 4, false);
+        for (let j = 16; j < 80; j++) w[j] = rotl(w[j-3] ^ w[j-8] ^ w[j-14] ^ w[j-16], 1);
+        let a = h0, b = h1, c = h2, d = h3, e = h4;
+        for (let j = 0; j < 80; j++) {
+          let f, k;
+          if (j < 20) { f = (b & c) | (~b & d); k = 0x5a827999; }
+          else if (j < 40) { f = b ^ c ^ d; k = 0x6ed9eba1; }
+          else if (j < 60) { f = (b & c) | (b & d) | (c & d); k = 0x8f1bbcdc; }
+          else { f = b ^ c ^ d; k = 0xca62c1d6; }
+          const t = (rotl(a, 5) + f + e + k + w[j]) >>> 0;
+          e = d; d = c; c = rotl(b, 30); b = a; a = t;
+        }
+        h0 = (h0 + a) >>> 0; h1 = (h1 + b) >>> 0; h2 = (h2 + c) >>> 0;
+        h3 = (h3 + d) >>> 0; h4 = (h4 + e) >>> 0;
+      }
+      const out = new DataView(new ArrayBuffer(20));
+      [h0,h1,h2,h3,h4].forEach((v, i) => out.setUint32(i * 4, v, false));
+      return new Uint8Array(out.buffer);
+    }
+
+    function sha256(bytes) {
+      const K = [
+        0x428a2f98,0x71374491,0xb5c0fbcf,0xe9b5dba5,0x3956c25b,0x59f111f1,0x923f82a4,0xab1c5ed5,
+        0xd807aa98,0x12835b01,0x243185be,0x550c7dc3,0x72be5d74,0x80deb1fe,0x9bdc06a7,0xc19bf174,
+        0xe49b69c1,0xefbe4786,0x0fc19dc6,0x240ca1cc,0x2de92c6f,0x4a7484aa,0x5cb0a9dc,0x76f988da,
+        0x983e5152,0xa831c66d,0xb00327c8,0xbf597fc7,0xc6e00bf3,0xd5a79147,0x06ca6351,0x14292967,
+        0x27b70a85,0x2e1b2138,0x4d2c6dfc,0x53380d13,0x650a7354,0x766a0abb,0x81c2c92e,0x92722c85,
+        0xa2bfe8a1,0xa81a664b,0xc24b8b70,0xc76c51a3,0xd192e819,0xd6990624,0xf40e3585,0x106aa070,
+        0x19a4c116,0x1e376c08,0x2748774c,0x34b0bcb5,0x391c0cb3,0x4ed8aa4a,0x5b9cca4f,0x682e6ff3,
+        0x748f82ee,0x78a5636f,0x84c87814,0x8cc70208,0x90befffa,0xa4506ceb,0xbef9a3f7,0xc67178f2
+      ];
+      const orig = bytes.length;
+      const tail = ((((orig + 8) >> 6) + 1) * 64);
+      const buf = new Uint8Array(tail);
+      buf.set(bytes); buf[orig] = 0x80;
+      const dv = new DataView(buf.buffer);
+      const bitHi = Math.floor((orig * 8) / 2 ** 32);
+      dv.setUint32(tail - 8, bitHi, false);
+      dv.setUint32(tail - 4, (orig * 8) >>> 0, false);
+      let h = [0x6a09e667,0xbb67ae85,0x3c6ef372,0xa54ff53a,0x510e527f,0x9b05688c,0x1f83d9ab,0x5be0cd19];
+      const rr = (x, n) => (x >>> n) | (x << (32 - n));
+      for (let i = 0; i < tail; i += 64) {
+        const w = new Uint32Array(64);
+        for (let j = 0; j < 16; j++) w[j] = dv.getUint32(i + j * 4, false);
+        for (let j = 16; j < 64; j++) {
+          const s0 = rr(w[j-15], 7) ^ rr(w[j-15], 18) ^ (w[j-15] >>> 3);
+          const s1 = rr(w[j-2], 17) ^ rr(w[j-2], 19) ^ (w[j-2] >>> 10);
+          w[j] = (w[j-16] + s0 + w[j-7] + s1) >>> 0;
+        }
+        let a=h[0],b=h[1],c=h[2],d=h[3],e=h[4],f=h[5],g=h[6],hh=h[7];
+        for (let j = 0; j < 64; j++) {
+          const S1 = rr(e,6) ^ rr(e,11) ^ rr(e,25);
+          const ch = (e & f) ^ (~e & g);
+          const t1 = (hh + S1 + ch + K[j] + w[j]) >>> 0;
+          const S0 = rr(a,2) ^ rr(a,13) ^ rr(a,22);
+          const maj = (a & b) ^ (a & c) ^ (b & c);
+          const t2 = (S0 + maj) >>> 0;
+          hh=g; g=f; f=e; e=(d + t1) >>> 0; d=c; c=b; b=a; a=(t1 + t2) >>> 0;
+        }
+        h = h.map((v, idx) => (v + [a,b,c,d,e,f,g,hh][idx]) >>> 0);
+      }
+      const out = new DataView(new ArrayBuffer(32));
+      h.forEach((v, i) => out.setUint32(i * 4, v, false));
+      return new Uint8Array(out.buffer);
+    }
+
+    function sha2_64(bytes, bits) {
+      const K = [
+        "428a2f98d728ae22","7137449123ef65cd","b5c0fbcfec4d3b2f","e9b5dba58189dbbc",
+        "3956c25bf348b538","59f111f1b605d019","923f82a4af194f9b","ab1c5ed5da6d8118",
+        "d807aa98a3030242","12835b0145706fbe","243185be4ee4b28c","550c7dc3d5ffb4e2",
+        "72be5d74f27b896f","80deb1fe3b1696b1","9bdc06a725c71235","c19bf174cf692694",
+        "e49b69c19ef14ad2","efbe4786384f25e3","0fc19dc68b8cd5b5","240ca1cc77ac9c65",
+        "2de92c6f592b0275","4a7484aa6ea6e483","5cb0a9dcbd41fbd4","76f988da831153b5",
+        "983e5152ee66dfab","a831c66d2db43210","b00327c898fb213f","bf597fc7beef0ee4",
+        "c6e00bf33da88fc2","d5a79147930aa725","06ca6351e003826f","142929670a0e6e70",
+        "27b70a8546d22ffc","2e1b21385c26c926","4d2c6dfc5ac42aed","53380d139d95b3df",
+        "650a73548baf63de","766a0abb3c77b2a8","81c2c92e47edaee6","92722c851482353b",
+        "a2bfe8a14cf10364","a81a664bbc423001","c24b8b70d0f89791","c76c51a30654be30",
+        "d192e819d6ef5218","d69906245565a910","f40e35855771202a","106aa07032bbd1b8",
+        "19a4c116b8d2d0c8","1e376c085141ab53","2748774cdf8eeb99","34b0bcb5e19b48a8",
+        "391c0cb3c5c95a63","4ed8aa4ae3418acb","5b9cca4f7763e373","682e6ff3d6b2b8a3",
+        "748f82ee5defb2fc","78a5636f43172f60","84c87814a1f0ab72","8cc702081a6439ec",
+        "90befffa23631e28","a4506cebde82bde9","bef9a3f7b2c67915","c67178f2e372532b",
+        "ca273eceea26619c","d186b8c721c0c207","eada7dd6cde0eb1e","f57d4f7fee6ed178",
+        "06f067aa72176fba","0a637dc5a2c898a6","113f9804bef90dae","1b710b35131c471b",
+        "28db77f523047d84","32caab7b40c72493","3c9ebe0a15c9bebc","431d67c49c100d4c",
+        "4cc5d4becb3e42b6","597f299cfc657e2a","5fcb6fab3ad6faec","6c44198c4a475817"
+      ].map((x) => BigInt("0x" + x));
+      const mask = (1n << 64n) - 1n;
+      const rotr = (x, n) => ((x >> n) | (x << (64n - n))) & mask;
+      const orig = BigInt(bytes.length);
+      const tail = Math.ceil((bytes.length + 17) / 128) * 128;
+      const buf = new Uint8Array(tail);
+      buf.set(bytes); buf[bytes.length] = 0x80;
+      const bit = orig * 8n;
+      for (let i = 0; i < 16; i++) buf[tail - 1 - i] = Number((bit >> BigInt(8 * i)) & 0xffn);
+      let H = bits === 384
+        ? ["cbbb9d5dc1059ed8","629a292a367cd507","9159015a3070dd17","152fecd8f70e5939",
+           "67332667ffc00b31","8eb44a8768581511","db0c2e0d64f98fa7","47b5481dbefa4fa4"]
+        : ["6a09e667f3bcc908","bb67ae8584caa73b","3c6ef372fe94f82b","a54ff53a5f1d36f1",
+           "510e527fade682d1","9b05688c2b3e6c1f","1f83d9abfb41bd6b","5be0cd19137e2179"];
+      H = H.map((x) => BigInt("0x" + x));
+      for (let i = 0; i < tail; i += 128) {
+        const w = new Array(80);
+        for (let j = 0; j < 16; j++) {
+          let v = 0n;
+          for (let k = 0; k < 8; k++) v = (v << 8n) | BigInt(buf[i + j * 8 + k]);
+          w[j] = v;
+        }
+        for (let j = 16; j < 80; j++) {
+          const s0 = rotr(w[j-15], 1n) ^ rotr(w[j-15], 8n) ^ (w[j-15] >> 7n);
+          const s1 = rotr(w[j-2], 19n) ^ rotr(w[j-2], 61n) ^ (w[j-2] >> 6n);
+          w[j] = (w[j-16] + s0 + w[j-7] + s1) & mask;
+        }
+        let a=H[0],b=H[1],c=H[2],d=H[3],e=H[4],f=H[5],g=H[6],h=H[7];
+        for (let j = 0; j < 80; j++) {
+          const S1 = rotr(e, 14n) ^ rotr(e, 18n) ^ rotr(e, 41n);
+          const ch = (e & f) ^ ((~e) & g);
+          const t1 = (h + S1 + ch + K[j] + w[j]) & mask;
+          const S0 = rotr(a, 28n) ^ rotr(a, 34n) ^ rotr(a, 39n);
+          const maj = (a & b) ^ (a & c) ^ (b & c);
+          const t2 = (S0 + maj) & mask;
+          h=g; g=f; f=e; e=(d + t1) & mask; d=c; c=b; b=a; a=(t1 + t2) & mask;
+        }
+        H = [a,b,c,d,e,f,g,h].map((v, idx) => (H[idx] + v) & mask);
+      }
+      const count = bits === 384 ? 6 : 8;
+      const out = new Uint8Array(count * 8);
+      for (let i = 0; i < count; i++) {
+        for (let k = 0; k < 8; k++) out[i * 8 + 7 - k] = Number((H[i] >> BigInt(8 * k)) & 0xffn);
+      }
+      return out;
+    }
+
+    function ripemd160(bytes) {
+      const orig = bytes.length;
+      const tail = ((((orig + 8) >> 6) + 1) * 64);
+      const buf = new Uint8Array(tail);
+      buf.set(bytes); buf[orig] = 0x80;
+      const dv = new DataView(buf.buffer);
+      dv.setUint32(tail - 8, orig * 8, true);
+      const rl = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,7,4,13,1,10,6,15,3,12,0,9,5,2,14,11,8,3,10,14,4,9,15,8,1,2,7,0,6,13,11,5,12,1,9,11,10,0,8,12,4,13,3,7,15,14,5,6,2,4,0,5,9,7,12,2,10,14,1,3,8,11,6,15,13];
+      const rr = [5,14,7,0,9,2,11,4,13,6,15,8,1,10,3,12,6,11,3,7,0,13,5,10,14,15,8,12,4,9,1,2,15,5,1,3,7,14,6,9,11,8,12,2,10,0,4,13,8,6,4,1,3,11,15,0,5,12,2,13,9,7,10,14,12,15,10,4,1,5,8,7,6,2,13,14,0,3,9,11];
+      const sl = [11,14,15,12,5,8,7,9,11,13,14,15,6,7,9,8,7,6,8,13,11,9,7,15,7,12,15,9,11,7,13,12,11,13,6,7,14,9,13,15,14,8,13,6,5,12,7,5,11,12,14,15,14,15,9,8,9,14,5,6,8,6,5,12,9,15,5,11,6,8,13,12,5,12,13,14,11,8,5,6];
+      const sr = [8,9,9,11,13,15,15,5,7,7,8,11,14,14,12,6,9,13,15,7,12,8,9,11,7,7,12,7,6,15,13,11,9,7,15,11,8,6,6,14,12,13,5,14,13,13,7,5,15,5,8,11,14,14,6,14,6,9,12,9,12,5,15,8,8,5,12,9,12,5,14,6,8,13,6,5,15,13,11,11];
+      const Kl = [0, 0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xa953fd4e];
+      const Kr = [0x50a28be6, 0x5c4dd124, 0x6d703ef3, 0x7a6d76e9, 0];
+      const fn = [
+        (x, y, z) => (x ^ y ^ z) >>> 0,
+        (x, y, z) => ((x & y) | (~x & z)) >>> 0,
+        (x, y, z) => ((x | ~y) ^ z) >>> 0,
+        (x, y, z) => ((x & z) | (y & ~z)) >>> 0,
+        (x, y, z) => (x ^ (y | ~z)) >>> 0
+      ];
+      const round = (st, ia, f, x, k, r) => {
+        const ic = (ia + 2) % 5;
+        const ie = (ia + 4) % 5;
+        const ib = (ia + 1) % 5;
+        const id = (ia + 3) % 5;
+        st[ia] = (rotl((st[ia] + f(st[ib], st[ic], st[id]) + x + k) >>> 0, r) + st[ie]) >>> 0;
+        st[ic] = rotl(st[ic], 10);
+      };
+      const h = [0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476, 0xc3d2e1f0];
+      for (let i = 0; i < tail; i += 64) {
+        const X = new Uint32Array(16);
+        for (let j = 0; j < 16; j++) X[j] = dv.getUint32(i + j * 4, true);
+        const L = h.slice();
+        const R = h.slice();
+        for (let j = 0; j < 80; j++) {
+          const ia = ((5 - (j % 5)) % 5);
+          const r = j >> 4;
+          round(L, ia, fn[r], X[rl[j]], Kl[r], sl[j]);
+          round(R, ia, fn[4 - r], X[rr[j]], Kr[r], sr[j]);
+        }
+        const t = (h[1] + L[2] + R[3]) >>> 0;
+        h[1] = (h[2] + L[3] + R[4]) >>> 0;
+        h[2] = (h[3] + L[4] + R[0]) >>> 0;
+        h[3] = (h[4] + L[0] + R[1]) >>> 0;
+        h[4] = (h[0] + L[1] + R[2]) >>> 0;
+        h[0] = t;
+      }
+      const out = new DataView(new ArrayBuffer(20));
+      h.forEach((v, i) => out.setUint32(i * 4, v, true));
+      return new Uint8Array(out.buffer);
+    }
+
+    function hashHex(algo, text) {
+      const b = utf8(text);
+      switch (algo) {
+        case "md5": return hex(md5(b));
+        case "sha1": return hex(sha1(b));
+        case "sha256": return hex(sha256(b));
+        case "sha384": return hex(sha2_64(b, 384));
+        case "sha512": return hex(sha2_64(b, 512));
+        case "ripemd160": return hex(ripemd160(b));
+        default: throw new Error("Неизвестный алгоритм");
+      }
+    }
+
+    function selfTest() {
+      const md = hashHex("md5", "abc");
+      const sha = hashHex("sha256", "abc");
+      if (md !== "900150983cd24fb0d6963f7d28e17f72") return "MD5 self-test failed: " + md;
+      if (sha !== "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad") return "SHA256 self-test failed: " + sha;
+      const demo = hashHex("md5", "demo:990.00:12:password_1");
+      if (demo !== "6c9d6eb96b82e643b343c26a85349a37") return "MD5 demo signature self-test failed: " + demo;
+      const rmd = hashHex("ripemd160", "abc");
+      if (rmd !== "8eb208f7e05d987a9b044a8e98c6b087f15a0bfc") return "RIPEMD160 self-test failed: " + rmd;
+      const sha512 = hashHex("sha512", "abc");
+      if (sha512 !== "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f") return "SHA512 self-test failed: " + sha512;
+      const sha384 = hashHex("sha384", "abc");
+      if (sha384 !== "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7") return "SHA384 self-test failed: " + sha384;
+      const sha1v = hashHex("sha1", "abc");
+      if (sha1v !== "a9993e364706816aba3e25717850c26c9cd0d89d") return "SHA1 self-test failed: " + sha1v;
+      return "";
+    }
+
+    function encodeReceipt(raw) {
+      const t = (raw || "").trim();
+      if (!t) return { ok: true, forSign: "", forRequest: "", note: "" };
+      if (t.startsWith("{")) {
+        try {
+          const mini = JSON.stringify(JSON.parse(t));
+          const enc = encodeURIComponent(mini);
+          return { ok: true, forSign: enc, forRequest: enc, note: "" };
+        } catch (e) {
+          return { ok: false, error: "Receipt: невалидный JSON" };
+        }
+      }
+      return { ok: true, forSign: t, forRequest: t, note: "" };
+    }
+
+    function receiptFromTodo() {
+      const sno = val("ReceiptSno");
+      const items = [...document.querySelectorAll("#rcptList .rcpt-item")].map((row) => {
+        const get = (f) => (row.querySelector("[data-f='" + f + "']")?.value || "").trim();
+        const item = {};
+        const fields = ["name", "quantity", "sum", "cost", "tax", "payment_method", "payment_object", "nomenclature_code"];
+        fields.forEach((f) => { if (get(f)) item[f] = get(f); });
+        if (item.quantity) item.quantity = Number(item.quantity);
+        if (item.sum) item.sum = Number(item.sum);
+        if (item.cost) item.cost = Number(item.cost);
+        return Object.keys(item).length ? item : null;
+      }).filter(Boolean);
+      if (!items.length && !sno) return "";
+      const obj = {};
+      if (sno) obj.sno = sno;
+      if (items.length) obj.items = items;
+      return JSON.stringify(obj);
+    }
+
+    function receiptSource() {
+      return state.rmode === "todo" ? receiptFromTodo() : $("Receipt").value;
+    }
+
+    function hasCyrillic(s) {
+      return /[\u0400-\u04FF]/.test(String(s));
+    }
+
+    function shpValueForSign(value) {
+      const v = String(value);
+      return hasCyrillic(v) ? encodeURIComponent(v) : v;
+    }
+
+    /* Порядок Shp_* в подписи — как у сервера: без учёта регистра, «_» раньше цифр.
+       Проверено 2026-09-21: shp_a:Shp_b, Shp_a:Shp_B, Shp_a_x:Shp_a1. */
+    const SHP_COLLATOR = new Intl.Collator("en", { sensitivity: "base" });
+    const shpCompare = (a, b) => SHP_COLLATOR.compare(a, b) || (a < b ? -1 : a > b ? 1 : 0);
+
+    function shpRows() {
+      return [...document.querySelectorAll("#shpList .shp-row")].map((row) => {
+        let name = row.querySelector(".shp-name").value.trim();
+        const value = row.querySelector(".shp-val").value;
+        if (!name && !value) return null;
+        if (name && !/^Shp_/i.test(name)) name = "Shp_" + name;
+        return { name, value };
+      }).filter(Boolean);
+    }
+
+    function paymentMethods() {
+      return [...document.querySelectorAll("#pmList input")].map((i) => i.value.trim()).filter(Boolean);
+    }
+
+    function expirationValue(errors) {
+      const d = val("ExpirationDate");
+      const hhRaw = val("ExpirationHH");
+      const mmRaw = val("ExpirationMM");
+      if (!d && !hhRaw && !mmRaw) return "";
+      if (!d || hhRaw === "" || mmRaw === "") {
+        errors.push("ExpirationDate: дата, ЧЧ и ММ вместе");
+        return "";
+      }
+      if (!/^\d{1,2}$/.test(hhRaw) || !/^\d{1,2}$/.test(mmRaw)) {
+        errors.push("ExpirationDate: ЧЧ и ММ — числа");
+        return "";
+      }
+      const hh = Number(hhRaw), mm = Number(mmRaw);
+      if (hh > 23 || mm > 59) {
+        errors.push("ExpirationDate: ЧЧ 0–23, ММ 0–59");
+        return "";
+      }
+      return d + "T" + String(hh).padStart(2, "0") + ":" + String(mm).padStart(2, "0");
+    }
+
+    function url2Pair(url, method, name) {
+      if (url && !method) return { error: name + " без Method → 29" };
+      if (!url) return { url: "", method: "" };
+      return { url, method: method || "GET" };
+    }
+
+    function htmlOpts() {
+      return {
+        full: checked("htmlFull"),
+        button: checked("htmlBtn")
+      };
+    }
+
+    function addRcpt(data = {}) {
+      const wrap = $("rcptList");
+      const row = document.createElement("div");
+      row.className = "rcpt-item";
+      const tax = ["", "none", "vat0", "vat5", "vat7", "vat10", "vat20", "vat22", "vat105", "vat107", "vat110", "vat120", "vat122"];
+      const pm = ["", "full_prepayment", "prepayment", "advance", "full_payment", "partial_payment", "credit", "credit_payment"];
+      const po = ["", "commodity", "excise", "job", "service", "payment", "agent_commission", "composite", "another", "property_right", "non-operating_gain", "insurance_premium", "sales_tax", "gambling_bet", "gambling_prize", "lottery", "lottery_prize", "intellectual_activity", "resort_fee", "tovar_mark"];
+      const opts = (list, cur) => list.map((v) => `<option value="${v}"${v === cur ? " selected" : ""}>${v}</option>`).join("");
+      row.innerHTML = `
+        <div class="head"><span>item</span><button type="button" class="ghost small">×</button></div>
+        <div class="row"><label>name</label><input data-f="name" type="text" value="${escAttr(data.name || "")}" /></div>
+        <div class="row inline">
+          <div class="row"><label>quantity</label><input data-f="quantity" type="text" inputmode="decimal" value="${escAttr(data.quantity || "")}" /></div>
+          <div class="row"><label>sum</label><input data-f="sum" type="text" inputmode="decimal" value="${escAttr(data.sum || "")}" /></div>
+          <div class="row"><label>cost</label><input data-f="cost" type="text" inputmode="decimal" value="${escAttr(data.cost || "")}" /></div>
+        </div>
+        <div class="row inline">
+          <div class="row"><label>tax</label><select data-f="tax">${opts(tax, data.tax || "")}</select></div>
+          <div class="row"><label>payment_method</label><select data-f="payment_method">${opts(pm, data.payment_method || "")}</select></div>
+        </div>
+        <div class="row inline">
+          <div class="row"><label>payment_object</label><select data-f="payment_object">${opts(po, data.payment_object || "")}</select></div>
+          <div class="row"><label>nomenclature_code</label><input data-f="nomenclature_code" type="text" value="${escAttr(data.nomenclature_code || "")}" /></div>
+        </div>`;
+      row.querySelector("button").onclick = () => { row.remove(); build(); };
+      row.querySelectorAll("input, select").forEach((el) => {
+        el.addEventListener("input", build);
+        el.addEventListener("change", build);
+      });
+      wrap.appendChild(row);
+    }
+
+    function addShp(name = "", value = "") {
+      const wrap = $("shpList");
+      const row = document.createElement("div");
+      row.className = "shp-row";
+      row.innerHTML = `<input class="shp-name" type="text" placeholder="Shp_order" spellcheck="false" /><input class="shp-val" type="text" placeholder="значение" /><button type="button" class="ghost small">×</button>`;
+      row.querySelector(".shp-name").value = name;
+      row.querySelector(".shp-val").value = value;
+      row.querySelector("button").onclick = () => { row.remove(); build(); };
+      row.querySelectorAll("input").forEach((el) => el.addEventListener("input", build));
+      wrap.appendChild(row);
+    }
+
+    function addPm(value = "") {
+      const wrap = $("pmList");
+      const row = document.createElement("div");
+      row.className = "pm-row";
+      row.style.gridTemplateColumns = "1fr auto";
+      row.innerHTML = `<input type="text" placeholder="BankCard" spellcheck="false" /><button type="button" class="ghost small">×</button>`;
+      row.querySelector("input").value = value;
+      row.querySelector("button").onclick = () => { row.remove(); build(); };
+      row.querySelector("input").addEventListener("input", build);
+      wrap.appendChild(row);
+    }
+
+    function collectParams() {
+      const login = val("MerchantLogin");
+      const password = $("Password1").value;
+      let outSum = val("OutSum").replace(",", ".");
+      const invId = val("InvId");
+      const errors = [];
+      if (!login) errors.push("Нужен MerchantLogin");
+      if (!password) errors.push("Нужен Пароль #1");
+      if (!outSum) errors.push("Нужна сумма OutSum");
+      else if (!/^\d+(\.\d+)?$/.test(outSum)) errors.push("OutSum: только цифры и точка");
+      if (invId && !/^\d+$/.test(invId)) errors.push("InvId должен быть целым числом");
+
+      const receipt = encodeReceipt(receiptSource());
+      if (!receipt.ok) errors.push(receipt.error);
+
+      const shp = shpRows();
+      const badShp = shp.find((p) => !/^Shp_[A-Za-z0-9_]+$/i.test(p.name));
+      if (badShp) errors.push("Имя Shp_* — латиница, цифры и _ после префикса: " + badShp.name);
+
+      const desc = val("Description");
+      if (desc.length > 100) errors.push("Description длиннее 100 символов");
+      const exp = expirationValue(errors);
+      const success2 = url2Pair(val("SuccessUrl2"), val("SuccessUrl2Method"), "SuccessUrl2");
+      const fail2 = url2Pair(val("FailUrl2"), val("FailUrl2Method"), "FailUrl2");
+      if (success2.error) errors.push(success2.error);
+      if (fail2.error) errors.push(fail2.error);
+
+      const modifiers = [];
+      const modifierLabels = [];
+      if (receipt.ok && receipt.forSign) {
+        modifiers.push(receipt.forSign);
+        modifierLabels.push("Receipt");
+      }
+      if (checked("StepByStep")) {
+        modifiers.push("true");
+        modifierLabels.push("StepByStep");
+      }
+      const urlMods = [
+        ["ResultUrl2", val("ResultUrl2")],
+        ["SuccessUrl2", success2.url],
+        ["SuccessUrl2Method", success2.method],
+        ["FailUrl2", fail2.url],
+        ["FailUrl2Method", fail2.method],
+        ["Token", val("Token")]
+      ];
+      urlMods.forEach(([label, value]) => {
+        if (value) { modifiers.push(value); modifierLabels.push(label); }
+      });
+
+      const parts = [login, outSum, invId];
+      const partMeta = [
+        { label: "MerchantLogin", value: login },
+        { label: "OutSum", value: outSum },
+        { label: "InvId", value: invId === "" ? "(пусто)" : invId }
+      ];
+      modifiers.forEach((m, i) => {
+        parts.push(m);
+        partMeta.push({ label: modifierLabels[i], value: m });
+      });
+      parts.push(password);
+      partMeta.push({ label: "Пароль#1", value: password });
+
+      const shpSorted = [...shp].sort((a, b) => shpCompare(a.name, b.name));
+      shpSorted.forEach((p) => {
+        const chunk = p.name + "=" + shpValueForSign(p.value);
+        parts.push(chunk);
+        partMeta.push({ label: p.name, value: chunk });
+      });
+
+      const base = parts.join(":");
+      const algo = val("HashAlgo");
+      const signature = errors.length ? "" : hashHex(algo, base);
+
+      const request = [];
+      const add = (k, v) => {
+        if (v === "" || v == null) return;
+        request.push({ k, v });
+      };
+      add("MerchantLogin", login);
+      add("OutSum", outSum);
+      if (invId !== "") add("InvId", invId);
+      add("Description", desc);
+      add("Email", val("Email"));
+      add("IncCurrLabel", val("IncCurrLabel"));
+      add("Culture", val("Culture"));
+      add("Encoding", val("Encoding"));
+      if (checked("IsTest")) add("IsTest", "1");
+      add("ExpirationDate", exp);
+      if (receipt.ok && receipt.forRequest) add("Receipt", receipt.forRequest);
+      if (checked("IsWithoutFreeSale")) add("IsWithoutFreeSale", "true");
+      add("FiscalParentOpId", val("FiscalParentOpId"));
+      if (checked("StepByStep")) add("StepByStep", "true");
+      paymentMethods().forEach((m) => add("PaymentMethods", m));
+      add("ResultUrl2", val("ResultUrl2"));
+      add("SuccessUrl2", success2.url);
+      add("SuccessUrl2Method", success2.method);
+      add("FailUrl2", fail2.url);
+      add("FailUrl2Method", fail2.method);
+      add("Token", val("Token"));
+      if (checked("Recurring")) add("Recurring", "true");
+      shpSorted.forEach((p) => add(p.name, shpValueForSign(p.value)));
+      if (signature) add("SignatureValue", signature);
+
+      const warnings = [];
+      const credit = creditAliasesIn([val("IncCurrLabel"), ...paymentMethods()].filter(Boolean));
+      if (credit.length) {
+        let items = null;
+        const src = (receiptSource() || "").trim();
+        const json = src.startsWith("{") ? src : (safeDecode(src) || "");
+        try { const o = JSON.parse(json); if (Array.isArray(o.items)) items = o.items; } catch (e) {}
+        if (!items || !items.length) {
+          warnings.push(credit.join(", ") + " без Receipt — форма оплаты не откроется");
+        } else if (outSum && Math.abs(Number(outSum) - receiptItemsSum(items)) > 0.005) {
+          warnings.push(credit.join(", ") + ": OutSum " + outSum + " ≠ позициям " + Math.round(receiptItemsSum(items) * 100) / 100 + " — форма оплаты не откроется");
+        }
+      }
+
+      return { errors, warnings, base, signature, algo, request, partMeta, receipt, outSum, login };
+    }
+
+    /* Сервер раскодирует запрос один раз и подписывает то, что получилось.
+       Поэтому GET и тело POST кодируются одинаково: Receipt и кириллица в Shp_*,
+       уже закодированные для подписи, кодируются ещё раз (проверено 2026-09-21). */
+    function buildQuery(request) {
+      return request.map(({ k, v }) => encodeURIComponent(k) + "=" + encodeURIComponent(v)).join("&");
+    }
+
+    function buildGet(request) {
+      return PAY_URL + "?" + buildQuery(request);
+    }
+
+    function buildPostBody(request) {
+      return buildQuery(request);
+    }
+
+    function escAttr(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+    }
+
+    function buildFormMarkup(request, withButton) {
+      const fields = request.map(({ k, v }) =>
+        `  <input type="hidden" name="${escAttr(k)}" value="${escAttr(v)}" />`
+      ).join("\n");
+      const btn = withButton ? `\n  <button type="submit">Оплатить</button>` : "";
+      return `<form id="pay" action="${PAY_URL}" method="POST">\n${fields}${btn}\n</form>`;
+    }
+
+    function buildHtmlPage(request, opts) {
+      const form = buildFormMarkup(request, opts.button !== false);
+      if (!opts.full) return form;
+      return `<!DOCTYPE html>\n<html lang="ru">\n<head>\n  <meta charset="UTF-8" />\n  <title>Robokassa</title>\n</head>\n<body>\n${form}\n</body>\n</html>`;
+    }
+
+    function fillHtmlPreview(request) {
+      const form = $("htmlPreview");
+      form.innerHTML = "";
+      request.forEach(({ k, v }) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = k;
+        input.value = v;
+        form.appendChild(input);
+      });
+      const btn = document.createElement("button");
+      btn.type = "submit";
+      btn.textContent = "Оплатить";
+      form.appendChild(btn);
+    }
+
+    function fillPostForm(request) {
+      const form = $("postForm");
+      form.innerHTML = "";
+      request.forEach(({ k, v }) => {
+        const input = document.createElement("input");
+        input.type = "hidden";
+        input.name = k;
+        input.value = v;
+        form.appendChild(input);
+      });
+    }
+
+    function currentPayload() {
+      const r = state.result;
+      if (!r || r.errors.length) return "";
+      if (state.fmt === "get") return buildGet(r.request);
+      if (state.fmt === "post") return buildPostBody(r.request);
+      return buildHtmlPage(r.request, htmlOpts());
+    }
+
+    function render() {
+      const r = state.result;
+      const msg = $("formMsg");
+      msg.innerHTML = "";
+      const isHtml = state.fmt === "html";
+      $("htmlOpts").classList.toggle("hidden", !isHtml);
+      $("downloadHtml").classList.toggle("hidden", !isHtml);
+      $("htmlPreview").classList.toggle("hidden", !isHtml);
+      if (!r) return;
+      const problems = state.selfTestFail ? [state.selfTestFail, ...r.errors] : r.errors;
+      if (problems.length) {
+        msg.innerHTML = `<div class="err">${problems.join("<br>")}</div>`;
+        $("linkOut").textContent = "ошибки слева";
+        $("sigOut").textContent = "—";
+        $("baseOut").textContent = r.base || "—";
+        $("baseParts").innerHTML = "";
+        $("linkMeta").innerHTML = "";
+        $("algoNote").textContent = "";
+        $("htmlPreview").classList.add("hidden");
+        return;
+      }
+      fillPostForm(r.request);
+      const titles = { get: "GET", post: "POST", html: "HTML POST" };
+      $("linkTitle").textContent = titles[state.fmt];
+      $("linkOut").textContent = currentPayload();
+      if (isHtml) fillHtmlPreview(r.request);
+      $("sigOut").textContent = r.signature;
+      $("baseOut").textContent = r.base;
+      $("algoNote").textContent = r.algo.toUpperCase();
+      $("baseParts").innerHTML = r.partMeta.map((p) => `<code title="${p.label}">${p.label}</code>`).join("");
+      const notes = [];
+      if (!checked("IsTest")) notes.push(`<div class="warn">боевой, без IsTest</div>`);
+      r.warnings.forEach((w) => notes.push(`<div class="warn">${escHtml(w)}</div>`));
+      if (state.fmt === "get" && buildGet(r.request).length > 2048) {
+        notes.push(`<div class="warn">GET ${buildGet(r.request).length} символов — больше 2048, будет 404. Лучше POST</div>`);
+      }
+      $("linkMeta").innerHTML = notes.join("");
+    }
+
+    function build() {
+      $("isTestBox").classList.toggle("live", !checked("IsTest"));
+      state.result = collectParams();
+      render();
+    }
+
+    function copyText(text, btn) {
+      if (!text || text === "—") return;
+      const done = () => {
+        if (!btn) return;
+        const old = btn.textContent;
+        btn.textContent = "Скопировано";
+        setTimeout(() => { btn.textContent = old; }, 1200);
+      };
+      const fallback = () => {
+        const ta = document.createElement("textarea");
+        ta.value = text;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        try { document.execCommand("copy"); done(); } catch (e) {}
+        document.body.removeChild(ta);
+      };
+      if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(text).then(done, fallback);
+      else fallback();
+    }
+
+    $("togglePass").onclick = () => {
+      const el = $("Password1");
+      el.type = el.type === "password" ? "text" : "password";
+      $("togglePass").textContent = el.type === "password" ? "Показать" : "Скрыть";
+    };
+    $("addShp").onclick = () => { addShp(); };
+    $("addPm").onclick = () => { addPm(); };
+    $("addRcpt").onclick = () => { addRcpt(); };
+    $("receiptMode").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      state.rmode = btn.dataset.rmode;
+      [...$("receiptMode").children].forEach((b) => b.classList.toggle("on", b === btn));
+      $("receiptRaw").classList.toggle("hidden", state.rmode !== "raw");
+      $("receiptTodo").classList.toggle("hidden", state.rmode !== "todo");
+      if (state.rmode === "todo" && !$("rcptList").children.length) addRcpt();
+      build();
+    });
+    $("resetBtn").onclick = () => {
+      IDS.forEach((id) => {
+        const el = $(id);
+        if (el.type === "checkbox") el.checked = false;
+        else el.value = "";
+      });
+      $("HashAlgo").value = "md5";
+      $("SuccessUrl2Method").value = "GET";
+      $("FailUrl2Method").value = "GET";
+      $("shpList").innerHTML = "";
+      $("pmList").innerHTML = "";
+      $("rcptList").innerHTML = "";
+      $("ReceiptSno").value = "";
+      state.rmode = "raw";
+      [...$("receiptMode").children].forEach((b) => b.classList.toggle("on", b.dataset.rmode === "raw"));
+      $("receiptRaw").classList.remove("hidden");
+      $("receiptTodo").classList.add("hidden");
+      document.querySelectorAll("details.opt").forEach((el) => { el.open = false; });
+      state.fmt = "get";
+      [...$("formatSeg").children].forEach((b) => b.classList.toggle("on", b.dataset.fmt === "get"));
+      build();
+    };
+    $("copyLink").onclick = (e) => copyText(currentPayload(), e.currentTarget);
+    $("copySig").onclick = (e) => copyText(state.result?.signature, e.currentTarget);
+    $("copyBase").onclick = (e) => copyText(state.result?.base, e.currentTarget);
+    $("openPay").onclick = () => {
+      if (!state.result || state.result.errors.length) return;
+      if (state.fmt === "get") window.open(buildGet(state.result.request), "_blank");
+      else if (state.fmt === "post") $("postForm").submit();
+      else {
+        const blob = new Blob([currentPayload()], { type: "text/html;charset=utf-8" });
+        window.open(URL.createObjectURL(blob), "_blank");
+      }
+    };
+    $("downloadHtml").onclick = () => {
+      if (!state.result || state.result.errors.length) return;
+      const blob = new Blob([currentPayload()], { type: "text/html;charset=utf-8" });
+      const a = document.createElement("a");
+      const inv = val("InvId") || "pay";
+      a.href = URL.createObjectURL(blob);
+      a.download = "robokassa-" + inv + ".html";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    };
+    $("formatSeg").addEventListener("click", (e) => {
+      const btn = e.target.closest("button");
+      if (!btn) return;
+      state.fmt = btn.dataset.fmt;
+      [...$("formatSeg").children].forEach((b) => b.classList.toggle("on", b === btn));
+      render();
+    });
+    ["htmlFull", "htmlBtn"].forEach((id) => {
+      $(id).addEventListener("change", render);
+    });
+    IDS.forEach((id) => {
+      const el = $(id);
+      el.addEventListener("input", build);
+      el.addEventListener("change", build);
+    });
+
+    /* ========================= РАЗБОР ========================= */
+
+    /* Список параметров Index.aspx из robokassa.yaml, сверено 2026-09-21 */
+    const INDEX_PARAMS = [
+      "MerchantLogin", "OutSum", "InvId", "SignatureValue", "Description", "Email",
+      "IncCurrLabel", "Culture", "Encoding", "IsTest", "ExpirationDate", "Receipt",
+      "IsWithoutFreeSale", "FiscalParentOpId", "StepByStep", "PaymentMethods",
+      "ResultUrl2", "SuccessUrl2", "SuccessUrl2Method", "FailUrl2", "FailUrl2Method",
+      "Token", "Recurring",
+      "OutSumCurrency"   // нет в robokassa.yaml, есть в базе поддержки (ошибка 60)
+    ];
+    /* Оплата частями и в кредит. Без номенклатуры (Receipt с items) запрос проходит,
+       но платёжная форма показывает «форма оплаты не работает» (саппорт, 2026-09-21).
+       Podeli, Mokka, YandexPaySplit — docs.robokassa.ru/ru/buynowpaylater.
+       OTP — подтверждён саппортом. Регистр не важен. */
+    const CREDIT_ALIASES = ["Podeli", "Mokka", "YandexPaySplit", "OTP"];
+    function creditAliasesIn(list) {
+      const low = CREDIT_ALIASES.map((a) => a.toLowerCase());
+      const hit = list.map((a) => String(a).trim()).filter((a) => low.includes(a.toLowerCase()));
+      return [...new Set(hit)];
+    }
+    /* sum в позиции Receipt — итог по строке; если его нет, считаем quantity × cost */
+    function receiptItemsSum(items) {
+      return items.reduce((a, it) => {
+        if (!it || typeof it !== "object") return a;
+        const s = Number(it.sum);
+        if (isFinite(s) && it.sum !== undefined && it.sum !== "") return a + s;
+        return a + (Number(it.quantity) || 0) * (Number(it.cost) || 0);
+      }, 0);
+    }
+
+    const URL_MODS = ["ResultUrl2", "SuccessUrl2", "FailUrl2"];
+    const INVID_MAX = 9223372036854775807n;
+    /* Метки shp_interface, которые Robokassa добавляет сама (FAQ поддержки) */
+    const SHP_INTERFACE = {
+      invoice: "ЛК → «Выставление счетов»", field: "ЛК → кнопка «Оплатить» или форма с вводом суммы",
+      link: "ЛК → «Ссылка»", but_qr: "ЛК → QR-код", "invoiceservice.webapi": "Invoice API (JWT)", tgbot: "бот @Robomerchant_bot"
+    };
+    /* Проверка состава Receipt — по чек-листу поддержки для BNPL и 54-ФЗ:
+       суммы числами, не больше двух знаков после запятой, cost × quantity = sum,
+       name до 128 символов, от 1 до 100 позиций. */
+    function receiptItemChecks(items, find, where) {
+      if (!items.length) { find("e", where + ": нет ни одной позиции", ""); return; }
+      if (items.length > 100) find("e", where + ": " + items.length + " позиций", "Максимум 100.");
+      const decimals = (n) => { const s = String(n); return s.includes(".") ? s.split(".")[1].length : 0; };
+      items.forEach((it, i) => {
+        const at = where + "[" + i + "]";
+        if (!it || typeof it !== "object") { find("e", at + " — не объект", ""); return; }
+        ["quantity", "sum", "cost"].forEach((f) => {
+          if (it[f] === undefined) return;
+          if (typeof it[f] === "string") find("e", at + "." + f + " строкой", "«" + it[f] + "» — нужно число.");
+          else if (typeof it[f] === "number" && f !== "quantity" && decimals(it[f]) > 2) {
+            find("w", at + "." + f + ": " + it[f], "Больше 2 знаков. Советуем cost вместо sum.");
+          }
+        });
+        ["name", "tax"].forEach((f) => {
+          if (it[f] !== undefined && typeof it[f] !== "string") find("e", at + "." + f + " не строка", "Передано " + JSON.stringify(it[f]) + ".");
+        });
+        if (typeof it.name === "string" && it.name.length > 128) find("e", at + ".name длиннее 128 символов", "Сейчас " + it.name.length + ".");
+        if (typeof it.cost === "number" && typeof it.quantity === "number" && typeof it.sum === "number") {
+          const d = Math.round((it.cost * it.quantity - it.sum) * 100) / 100;
+          if (Math.abs(d) > 0.005) find("e", at + ": cost × quantity ≠ sum", it.cost + " × " + it.quantity + " = " + Math.round(it.cost * it.quantity * 100) / 100 + ", а sum = " + it.sum + ".");
+        }
+      });
+    }
+
+    /* Порядок модификаторов в базе подписи — строго такой */
+    const MOD_ORDER = ["Receipt", "StepByStep", "ResultUrl2", "SuccessUrl2", "SuccessUrl2Method", "FailUrl2", "FailUrl2Method", "Token"];
+    const NOT_IN_HASH = ["Description", "Email", "Encoding", "Culture", "ExpirationDate",
+      "IncCurrLabel", "PaymentMethods", "IsTest", "Recurring", "IsWithoutFreeSale", "FiscalParentOpId"];
+    const SIG_LEN = { 32: ["md5"], 40: ["sha1", "ripemd160"], 64: ["sha256"], 96: ["sha384"], 128: ["sha512"] };
+    const ALGO_LABEL = { md5: "MD5", sha1: "SHA1", sha256: "SHA256", sha384: "SHA384", sha512: "SHA512", ripemd160: "RIPEMD160" };
+
+    /* Правило: регистр имени параметра не важен, InvId = invid = InvID.
+       PARAM_SYNONYMS — другие имена, которые Robokassa принимает наравне с каноническим.
+       Подтверждённые синонимы добавлять сюда, здесь не место догадкам. */
+    const PARAM_SYNONYMS = {
+      /* Проверено по кодам страницы оплаты 2026-09-21: для имени логина сервер доходит
+         до проверки подписи (29), а не «логин не передан» (30); для номера счёта
+         InvId=abc даёт 500 — так же, как у канонического имени. Ключ — имя в нижнем регистре. */
+      mrchlogin: "MerchantLogin",
+      invoiceid: "InvId",
+      inv_id: "InvId"
+    };
+    /* Имена из соседних интерфейсов — по robokassa.yaml принадлежат другим методам.
+       Если такое прилетело на Index.aspx, вероятно перепутали метод. */
+    const FOREIGN_PARAMS = {
+      signature: { to: "SignatureValue", where: "Service.asmx/OpStateExt" },
+      language: { to: "Culture", where: "Service.asmx/GetCurrencies" }
+    };
+    const aliasKey = (s) => String(s).toLowerCase().replace(/[_\s-]/g, "");
+    function canonParam(k) {
+      const low = String(k).toLowerCase();
+      const direct = INDEX_PARAMS.find((n) => n.toLowerCase() === low);
+      if (direct) return { name: direct, synonym: false };
+      const syn = PARAM_SYNONYMS[low];
+      return syn ? { name: syn, synonym: true } : null;
+    }
+
+    /* Кавычки тоже: результат попадает и в атрибуты (title у чипов базы) */
+    const escHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+    function safeDecode(s) {
+      try { return decodeURIComponent(String(s).replace(/\+/g, "%20")); } catch (e) { return null; }
+    }
+
+    function levenshtein(a, b) {
+      let prev = Array.from({ length: b.length + 1 }, (_, j) => j);
+      for (let i = 1; i <= a.length; i++) {
+        const cur = [i];
+        for (let j = 1; j <= b.length; j++) {
+          cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+        }
+        prev = cur;
+      }
+      return prev[b.length];
+    }
+    function suggest(name, pool) {
+      const lower = name.toLowerCase();
+      const exact = pool.find((p) => p.toLowerCase() === lower);
+      if (exact) return { name: exact, caseOnly: true };
+      let best = null, bestD = 99;
+      for (const p of pool) {
+        const d = levenshtein(lower, p.toLowerCase());
+        if (d < bestD) { bestD = d; best = p; }
+      }
+      return best && bestD <= Math.max(2, Math.ceil(Math.max(name.length, best.length) * 0.34)) ? { name: best, caseOnly: false } : null;
+    }
+
+    /* Вход: GET-ссылка, query, тело POST, HTML-форма, curl или строки «Ключ: значение».
+       Храним и сырое значение, и раскодированное — какое из них попало в подпись,
+       зависит от формата, поэтому в матрице перебираются оба. */
+    function parseIndexInput(raw) {
+      const t = raw.trim();
+      if (!t) return null;
+      const pairs = [];
+
+      if (/<input/i.test(t)) {
+        const doc = new DOMParser().parseFromString(t, "text/html");
+        doc.querySelectorAll("input[name]").forEach((i) => {
+          const v = i.getAttribute("value") || "";
+          pairs.push({ k: i.getAttribute("name"), rawV: v, v });
+        });
+        return annotate({ pairs, source: "HTML-форма" });
+      }
+
+      let body = t, source = "";
+      const cm = t.match(/(?:-d|--data(?:-raw|-urlencode|-binary)?)\s+(['"])([\s\S]*?)\1/);
+      if (cm) { body = cm[2]; source = "curl"; }
+
+      if (/^https?:\/\//i.test(body)) {
+        const q = body.indexOf("?");
+        if (q < 0) return annotate({ pairs, source: "ссылка без параметров" });
+        body = body.slice(q + 1);
+        source = source || "GET-ссылка";
+      }
+      body = body.replace(/^[?&]+/, "").trim();
+
+      if (body.includes("=") && (body.includes("&") || !/\r?\n/.test(body))) {
+        body.split("&").forEach((chunk) => {
+          if (!chunk) return;
+          const i = chunk.indexOf("=");
+          const k = i < 0 ? chunk : chunk.slice(0, i);
+          const rawV = i < 0 ? "" : chunk.slice(i + 1);
+          pairs.push({ k: safeDecode(k) ?? k, rawV, v: safeDecode(rawV) });
+        });
+        return annotate({ pairs, source: source || "тело запроса" });
+      }
+
+      t.split(/\r?\n/).forEach((line) => {
+        const m = line.match(/^\s*([A-Za-z_][\w]*)\s*[:=]\s*(.*)$/);
+        if (m) pairs.push({ k: m[1], rawV: m[2].trim(), v: m[2].trim() });
+      });
+      return pairs.length ? annotate({ pairs, source: "список параметров" }) : null;
+    }
+
+    /* Каноническое имя для каждого параметра — дальше всё ищется только по нему,
+       чтобы регистр и синонимы не ломали разбор. */
+    function annotate(p) {
+      const raw = $("rawIn").value.trim();
+      p.indexjson = /Indexjson\.aspx/i.test(raw);
+      p.getLength = /^https?:\/\//i.test(raw) && p.source === "GET-ссылка" ? raw.length : 0;
+      p.pairs.forEach((x) => {
+        if (/^Shp_/i.test(x.k)) { x.canon = x.k; x.shp = true; return; }
+        const c = canonParam(x.k);
+        x.canon = c ? c.name : null;
+        x.synonym = !!(c && c.synonym);
+      });
+      return p;
+    }
+
+    /* Сервер раскодирует запрос один раз и подписывает значение ровно в том виде,
+       что получилось. Проверено 2026-09-21: сырой JSON в Receipt, сырая кириллица
+       и «a b» в Shp_* принимаются, если так же и подписаны. Для GET, тела POST и curl
+       это раскодированное значение, для HTML-формы — атрибут value как есть.
+       Лестница вокруг него (ниже — раскодированные варианты, выше — закодированный
+       ещё раз) нужна только чтобы назвать ошибку. */
+    function serverValue(pair) {
+      return pair.v == null ? String(pair.rawV == null ? "" : pair.rawV) : String(pair.v);
+    }
+    function encLadder(pair) {
+      const sv = serverValue(pair);
+      const lad = [];
+      let cur = sv;
+      for (let i = 0; i < 3; i++) {
+        const d = safeDecode(cur);
+        if (d === null || d === cur) break;
+        lad.unshift(d);
+        cur = d;
+      }
+      const want = lad.length;
+      lad.push(sv);
+      const up = encodeURIComponent(sv);
+      if (up !== sv) lad.push(up);
+      return { lad, want };
+    }
+    /* Полностью раскодированное значение — для проверок содержимого и для конструктора */
+    const rawOf = (pair) => encLadder(pair).lad[0];
+    function encDelta(name, d) {
+      const times = Math.abs(d) > 1 ? " (" + Math.abs(d) + " раза)" : "";
+      return name + (d > 0 ? " в подписи закодирован лишний раз" : " в подписи раскодирован") + times;
+    }
+
+    function subsetsOf(list) {
+      const res = [list.slice()];
+      for (let i = 0; i < list.length; i++) res.push(list.filter((_, j) => j !== i));
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) res.push(list.filter((_, k) => k !== i && k !== j));
+      }
+      if (list.length) res.push([]);
+      return res;
+    }
+
+    /* Генератор: отдаёт управление каждые 50 вариантов (50 × SHA512 ≈ 25 мс), итог — в return.
+       Крутит его runMatrix, чтобы страница не зависала. */
+    function* diagnoseIndexSignature(p, password, given) {
+      const algos = SIG_LEN[given.length] || [];
+      const get = (k) => p.pairs.find((x) => x.canon === k);
+
+      const login = (get("MerchantLogin") || {}).v || "";
+      const invIdRaw = (get("InvId") || {}).v;
+      /* В базе подписи — ровно та строка OutSum, что пришла в запросе, запятая тоже */
+      const outRaw = ((get("OutSum") || {}).v || "").trim();
+      const outVariants = [{ v: outRaw, label: "как пришло" }];
+      const n = Number(outRaw.replace(",", "."));
+      if (isFinite(n)) {
+        [outRaw.replace(",", "."), n.toFixed(2), String(n), n.toFixed(0)].forEach((s) => {
+          if (s !== outRaw && !outVariants.some((x) => x.v === s)) outVariants.push({ v: s, label: "как " + s });
+        });
+      }
+      const invVariants = [{ v: invIdRaw == null ? "" : invIdRaw, label: "как пришло" }];
+      if (invIdRaw) invVariants.push({ v: "", label: "пустой слот" });
+      else invVariants.push({ v: "0", label: "как 0" });
+
+      const presentMods = MOD_ORDER.filter((m) => {
+        const g = get(m);
+        if (!g) return false;
+        if (m === "StepByStep") return String(g.v).toLowerCase() === "true";
+        return g.v !== "" && g.v != null;
+      });
+      const modLad = {};
+      presentMods.forEach((m) => { modLad[m] = encLadder(get(m)); });
+
+      const shpPairs = p.pairs.filter((x) => x.shp);
+      const shpLads = shpPairs.map((x) => encLadder(x));
+      const shpLayouts = [];
+      const addLayout = (l) => {
+        const key = l.chunks.join("|");
+        if (!shpLayouts.some((x) => x.chunks.join("|") === key)) shpLayouts.push(l);
+      };
+      if (shpPairs.length) {
+        const order = shpPairs.map((_, i) => i);
+        const byName = (cmp) => [...order].sort((a, b) => cmp(shpPairs[a].k, shpPairs[b].k));
+        /* Порядок: как у сервера; как в запросе; по кодам символов (так сортирует ksort в PHP) */
+        const orders = [
+          { idx: byName(shpCompare), order: "ok" },
+          { idx: order, order: "request" },
+          { idx: byName((a, b) => (a < b ? -1 : a > b ? 1 : 0)), order: "ordinal" }
+        ];
+        const maxDown = Math.max(...shpLads.map((l) => l.want));
+        const ds = [0, 1];
+        for (let d = 1; d <= maxDown; d++) ds.push(-d);
+        /* Имя Shp_ входит в базу ровно в том регистре, в каком передано в запросе.
+           Остальные варианты регистра — чтобы поймать клиента, который подписал иначе. */
+        const nameAs = [
+          { f: (k) => k, wrong: false },
+          { f: (k) => "Shp_" + k.slice(4), wrong: true },
+          { f: (k) => "shp_" + k.slice(4), wrong: true },
+          { f: (k) => k.toLowerCase(), wrong: true }
+        ];
+        for (const nm of nameAs) {
+          for (const d of ds) {
+            const lvlOf = (i) => Math.max(0, Math.min(shpLads[i].want + d, shpLads[i].lad.length - 1));
+            const chunk = (i) => nm.f(shpPairs[i].k) + "=" + shpLads[i].lad[lvlOf(i)];
+            const wrongEnc = shpPairs.some((_, i) => lvlOf(i) !== shpLads[i].want);
+            const renamed = shpPairs.some((x) => nm.f(x.k) !== x.k);
+            orders.forEach((o) => addLayout({ chunks: o.idx.map(chunk), order: o.order, d, wrongEnc, wrongName: nm.wrong && renamed }));
+          }
+        }
+        shpLayouts.push({ chunks: [], order: "ok", dropped: true });
+      } else {
+        shpLayouts.push({ chunks: [], order: "ok", none: true });
+      }
+
+      /* Частая ошибка: в подпись суют то, чего там быть не должно */
+      const extraCandidates = NOT_IN_HASH.filter((k) => { const g = get(k); return g && g.v; });
+      const extraVariants = [{ vals: [], label: "" }];
+      extraCandidates.forEach((k) => extraVariants.push({ vals: [serverValue(get(k))], label: "лишний в подписи: " + k }));
+      if (extraCandidates.length > 1) {
+        extraVariants.push({
+          vals: extraCandidates.map((k) => serverValue(get(k))),
+          label: "лишние в подписи: " + extraCandidates.join(", ")
+        });
+      }
+
+      /* Уровень кодирования перебираем только у Receipt — у остальных модификаторов
+         он однозначен. Иначе комбинаторика взрывается без пользы. */
+      const modCombos = [];
+      subsetsOf(presentMods).forEach((subset) => {
+        const rec = (i, vals, deltas) => {
+          if (i === subset.length) { modCombos.push({ values: vals.slice(), subset, deltas: deltas.slice() }); return; }
+          const m = subset[i];
+          const { lad, want } = modLad[m];
+          /* Receipt — все уровни. URL2 — ещё и закодированный вид: по базе поддержки
+             «ранее принималось URL-кодированное значение в контрольной сумме — сейчас это ошибка». */
+          const isUrl = URL_MODS.includes(m);
+          const levels = m === "Receipt" ? [want, ...lad.map((_, idx) => idx).filter((idx) => idx !== want)]
+            : isUrl && lad.length > want + 1 ? [want, want + 1] : [want];
+          levels.forEach((lvl) => {
+            vals.push(lad[lvl]);
+            const wrong = lvl !== want;
+            if (wrong && isUrl && lvl === want + 1) deltas.push(m + " в подписи закодирован — теперь это 29, нужен как есть");
+            else if (wrong) deltas.push(encDelta(m, lvl - want));
+            rec(i + 1, vals, deltas);
+            if (wrong) deltas.pop();
+            vals.pop();
+          });
+        };
+        rec(0, [], []);
+      });
+
+      const want = given.toLowerCase();
+      let tried = 0;
+      for (const algo of algos) {
+        for (const out of outVariants) {
+          for (const inv of invVariants) {
+            for (const mc of modCombos) {
+              for (const extra of extraVariants) {
+                for (const shp of shpLayouts) {
+                  const base = [login, out.v, inv.v, ...extra.vals, ...mc.values, password, ...shp.chunks].join(":");
+                  tried++;
+                  if (hashHex(algo, base).toLowerCase() === want) {
+                    return { tried, match: { algo, out, inv, mc, extra, shp, base, presentMods } };
+                  }
+                  if (tried % 50 === 0) yield tried;
+                }
+              }
+            }
+          }
+        }
+      }
+      return { tried, match: null, presentMods, algos };
+    }
+
+    /* Крутит перебор кусками по ~25 мс. Новый ввод меняет state.checkToken и
+       останавливает старый перебор. Худший случай — около полумиллиона вариантов
+       (SHA512, все модификаторы, 6 Shp_*), поэтому есть потолок по времени. */
+    const MATRIX_BUDGET_MS = 20000;
+    function runMatrix(gen, token, done) {
+      const started = performance.now();
+      const step = () => {
+        if (token !== state.checkToken) return;
+        const t0 = performance.now();
+        let r;
+        do { r = gen.next(); } while (!r.done && performance.now() - t0 < 25);
+        if (r.done) { done(r.value); return; }
+        if (performance.now() - started > MATRIX_BUDGET_MS) { done({ tried: r.value, match: null, stopped: true }); return; }
+        setTimeout(step, 0);
+      };
+      step();
+    }
+
+    function expectedIndexBase(p, password) {
+      const get = (k) => p.pairs.find((x) => x.canon === k);
+      const login = (get("MerchantLogin") || {}).v || "";
+      const outSum = ((get("OutSum") || {}).v || "").trim();
+      const invId = (get("InvId") || {}).v || "";
+      const meta = [
+        { label: "MerchantLogin", value: login },
+        { label: "OutSum", value: outSum },
+        { label: "InvId", value: invId === "" ? "(пусто)" : invId }
+      ];
+      const parts = [login, outSum, invId];
+      MOD_ORDER.forEach((m) => {
+        const g = get(m);
+        if (!g || g.v === "" || g.v == null) return;
+        if (m === "StepByStep" && String(g.v).toLowerCase() !== "true") return;
+        const value = serverValue(g);
+        parts.push(value);
+        meta.push({ label: m, value });
+      });
+      parts.push(password);
+      meta.push({ label: "Пароль#1", value: password });
+      p.pairs.filter((x) => x.shp)
+        .sort((a, b) => shpCompare(a.k, b.k))
+        .forEach((x) => {
+          const chunk = x.k + "=" + serverValue(x);
+          parts.push(chunk);
+          meta.push({ label: x.k, value: chunk });
+        });
+      return { base: parts.join(":"), meta };
+    }
+
+    function renderCheck() {
+      /* Новый токен останавливает перебор подписи, запущенный прошлым вводом */
+      const token = state.checkToken = (state.checkToken || 0) + 1;
+      state.checkDone = Promise.resolve();
+      const findings = [];
+      const find = (lvl, title, text) => findings.push({ lvl, title, text });
+      const raw = $("rawIn").value;
+      const chip = $("sigChip");
+      chip.className = "sig-chip na";
+      chip.textContent = "подпись не проверена";
+      $("cBaseOut").textContent = "—";
+      $("cBaseParts").innerHTML = "";
+      $("cSigOut").textContent = "—";
+      $("cSigTitle").textContent = "Подпись";
+      $("cParams").innerHTML = "—";
+      $("toBuilder").disabled = true;
+      state.parsed = null;
+
+      if (!raw.trim()) {
+        $("findings").innerHTML = '<div class="find i"><b>Пусто</b><span>Вставь ссылку или параметры слева.</span></div>';
+        return;
+      }
+
+      const p = parseIndexInput(raw);
+      if (!p || !p.pairs.length) {
+        $("findings").innerHTML = '<div class="find e"><b>Не разобралось</b><span>Нужна ссылка, тело запроса, HTML-форма или строки вида Ключ=значение.</span></div>';
+        return;
+      }
+      state.parsed = p;
+      $("toBuilder").disabled = false;
+      find("i", "Разобрано как " + p.source, "Параметров: " + p.pairs.length + ".");
+
+      const get = (k) => p.pairs.find((x) => x.canon === k);
+      const v = (k) => { const g = get(k); return g ? (g.v == null ? g.rawV : g.v) : undefined; };
+
+      $("cParams").innerHTML = '<table class="param-table">' + p.pairs.map((x) => {
+        const shown = x.v == null ? x.rawV + "  (не раскодировалось)" : x.v;
+        const name = x.canon && x.canon !== x.k ? x.k + " → " + x.canon : x.k;
+        return '<tr' + (x.canon === "SignatureValue" ? ' class="sig"' : "") + "><td>" + escHtml(name) + "</td><td>" + escHtml(shown) + "</td></tr>";
+      }).join("") + "</table>";
+
+      /* --- структура --- */
+      const seen = {};
+      p.pairs.forEach((x) => {
+        const key = x.canon || x.k;
+        (seen[key] = seen[key] || []).push(x.k);
+      });
+      Object.entries(seen).forEach(([k, names]) => {
+        if (names.length > 1 && k !== "PaymentMethods") {
+          find("w", "Параметр " + k + " передан " + names.length + " раза",
+            "Как " + names.join(", ") + ".");
+        }
+      });
+      p.pairs.forEach((x) => {
+        if (x.v === null) find("e", x.k + ": значение не раскодировалось", "Битая кодировка: " + x.rawV.slice(0, 60));
+      });
+
+      /* Коды — из таблицы ошибок платёжной страницы (docs.robokassa.ru/ru/pay-interface),
+         соответствие проверено запросами 2026-09-21 */
+      if (v("MerchantLogin") === undefined || v("MerchantLogin") === "") {
+        find("e", "Нет MerchantLogin", "Код 30. Принимаются MerchantLogin / MrchLogin.");
+      }
+      if (v("OutSum") === undefined || v("OutSum") === "") {
+        find("e", "Нет OutSum", "Код 31.");
+      }
+      if (get("SignatureValue") === undefined) {
+        find("i", "SignatureValue не передан", "Посчитать — «Загрузить в конструктор».");
+      } else if (!String(v("SignatureValue") || "").trim()) {
+        find("e", "SignatureValue пустой", "");
+      }
+
+      /* Регистр и подтверждённые синонимы — не ошибка, просто отмечаем, как поняли */
+      const synonyms = p.pairs.filter((x) => x.synonym);
+      if (synonyms.length) {
+        find("i", "Синонимы: " + synonyms.map((x) => x.k + " → " + x.canon).join(", "), "");
+      }
+      p.pairs.forEach((x) => {
+        if (x.shp || x.canon) return;
+        const foreign = FOREIGN_PARAMS[aliasKey(x.k)];
+        if (foreign) {
+          find("w", "«" + x.k + "» — имя из другого метода", "Это из " + foreign.where + ", здесь " + foreign.to + ".");
+          return;
+        }
+        const s = suggest(x.k, INDEX_PARAMS);
+        find("w", "Неизвестный параметр «" + x.k + "»",
+          (s ? "Похоже на " + s.name + ". " : "") + "Свой — только с Shp_.");
+      });
+
+      const outSum = (v("OutSum") || "").trim().replace(",", ".");
+      if (outSum && /^\d+,\d+$/.test((v("OutSum") || "").trim())) {
+        find("w", "OutSum с запятой", "Не отклоняется, трактовка не проверена — надёжнее точка.");
+      } else if (outSum && !/^\d+(\.\d+)?$/.test(outSum)) {
+        find("e", "OutSum не число", "«" + v("OutSum") + "» — код 31.");
+      } else if (outSum && Number(outSum) <= 0) {
+        find("e", "OutSum должен быть больше нуля", "Код 31.");
+      }
+      const invId = v("InvId");
+      if (invId && /^-\d+$/.test(invId)) {
+        find("e", "InvId отрицательный", "Код 30.");
+      } else if (invId && !/^\d+$/.test(invId)) {
+        find("e", "InvId не число", "«" + invId + "» — код 500.");
+      }
+      if (invId && /^\d+$/.test(invId) && BigInt(invId) > INVID_MAX) {
+        find("e", "InvId больше допустимого", "Максимум 9223372036854775807, код 500.");
+      }
+      const exp = v("ExpirationDate");
+      if (exp && !isNaN(Date.parse(exp)) && Date.parse(exp) < Date.now()) {
+        find("e", "ExpirationDate уже прошла", "«" + exp + "» — код 33.");
+      }
+
+      /* --- по базе типовых ошибок и FAQ поддержки --- */
+      if (p.indexjson) {
+        find("w", "Запрос на Indexjson.aspx (метод curl)", "Метод убран. Не работают ExpirationDate, IncCurrLabel, PaymentMethods, URL2. Нужен POST на Index.aspx.");
+      }
+      if (p.getLength > 2048) {
+        find("w", "GET-ссылка длиной " + p.getLength + " символов", "Больше 2048 — будет 404. Сократить или POST.");
+      }
+      const desc = v("Description");
+      if (desc && /\p{Extended_Pictographic}/u.test(desc)) {
+        find("e", "Смайлики в Description", "Частая причина 30.");
+      }
+      const rec = v("Recurring");
+      if (rec !== undefined && rec !== "" && rec !== "true") {
+        find("e", "Recurring = «" + rec + "»", "Нужно ровно true — с True материнская не создаётся.");
+      }
+      const email = v("Email");
+      if (email && (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email) || /[А-Яа-яЁё]/.test(email))) {
+        find("w", "Email выглядит некорректно: «" + email + "»", "Частая причина 41.");
+      }
+      const cur = v("OutSumCurrency");
+      if (cur !== undefined) {
+        find(["USD", "EUR", "KZT"].includes(String(cur).toUpperCase()) ? "w" : "e", "Передан OutSumCurrency = «" + cur + "»",
+          "В РФ не поддерживается. Не USD/EUR/KZT — код 60. Роль в подписи не проверена.");
+      }
+      const shpIf = p.pairs.find((x) => x.shp && x.k.toLowerCase() === "shp_interface");
+      if (shpIf) {
+        const src = SHP_INTERFACE[String(rawOf(shpIf)).toLowerCase()];
+        find("i", "Shp_interface = " + rawOf(shpIf), (src ? src + ". " : "") + "Участвует в подписи.");
+      }
+      if (v("Description") && v("Description").length > 100) {
+        find("e", "Description длиннее 100 символов", "Сейчас " + v("Description").length + ".");
+      }
+
+      [["SuccessUrl2", "SuccessUrl2Method"], ["FailUrl2", "FailUrl2Method"]].forEach(([u, m]) => {
+        if (v(u) && !v(m)) find("e", u + " без " + m, "Нужны оба, в запросе и в подписи — иначе 29.");
+        if (!v(u) && v(m)) find("e", m + " без " + u, "");
+        if (v(m) && !["GET", "POST"].includes(String(v(m)).toUpperCase())) {
+          find("e", m + ": «" + v(m) + "»", "Только GET / POST.");
+        }
+      });
+      if (v("ResultUrl2Method") !== undefined) {
+        find("e", "ResultUrl2Method не существует", "У ResultUrl2 нет Method.");
+      }
+
+      const cyrillicShp = [];
+      p.pairs.filter((x) => x.shp).forEach((x) => {
+        if (!/^Shp_[A-Za-z0-9_]+$/i.test(x.k)) find("e", "Имя " + x.k + " не по формату", "Латиница, цифры, _.");
+        if (hasCyrillic(rawOf(x))) cyrillicShp.push(x.k);
+      });
+
+      const methods = [get("IncCurrLabel"), ...p.pairs.filter((x) => x.canon === "PaymentMethods")]
+        .filter(Boolean).map((x) => rawOf(x)).filter(Boolean);
+      const credit = creditAliasesIn(methods);
+      const creditNote = credit.length
+        ? " С " + credit.join(", ") + " → «форма оплаты не работает»."
+        : "";
+
+      const rcpt = get("Receipt");
+      let rcptItems = null;
+      if (rcpt) {
+        const json = rawOf(rcpt);
+        if (!json.trim().startsWith("{")) find("w", "Receipt не разбирается как JSON", "");
+        else {
+          try {
+            const obj = JSON.parse(json);
+            if (JSON.stringify(obj) !== json.trim()) find("w", "Receipt не минимизирован", "Есть пробелы / переводы строк.");
+            if (!Array.isArray(obj.items)) find("e", "В Receipt нет массива items", "");
+            if (Array.isArray(obj.items)) {
+              rcptItems = obj.items;
+              receiptItemChecks(obj.items, find, "Receipt.items");
+              const s = receiptItemsSum(obj.items);
+              if (outSum && Math.abs(Number(outSum) - s) > 0.005) {
+                find("e", "OutSum не сходится с Receipt", "OutSum " + outSum + ", позиции " + Math.round(s * 100) / 100 + "." + creditNote);
+              } else if (outSum) {
+                find("o", "OutSum сходится с Receipt", "");
+              }
+            }
+          } catch (e) {
+            find("e", "Receipt — невалидный JSON", e.message);
+          }
+        }
+      }
+      if (credit.length && !(rcptItems && rcptItems.length)) {
+        find("e", "BNPL без номенклатуры: " + credit.join(", "), "Нужен Receipt, иначе «форма оплаты не работает».");
+      }
+
+      const isTest = String(v("IsTest") || "");
+      if (isTest === "1") find("i", "IsTest=1", "Тестовый Пароль #1.");
+      else find("i", "Боевой", "Основной Пароль #1.");
+
+      /* --- подпись --- */
+      const sig = String(v("SignatureValue") || "").trim();
+      if (sig) {
+        $("cSigOut").textContent = sig;
+        if (!/^[0-9a-fA-F]+$/.test(sig)) {
+          find("e", "SignatureValue не шестнадцатеричная строка", "Нужен hex: " + sig.slice(0, 40));
+        } else if (!SIG_LEN[sig.length]) {
+          find("e", "Длина подписи " + sig.length + " не совпадает ни с одним алгоритмом",
+            "MD5 — 32, SHA1 и RIPEMD160 — 40, SHA256 — 64, SHA384 — 96, SHA512 — 128.");
+        } else {
+          find("i", "Алгоритм по длине: " + SIG_LEN[sig.length].map((a) => ALGO_LABEL[a]).join(" или "), "");
+        }
+      }
+
+      const pass = $("cPass1").value;
+      if (pass) {
+        const exp = expectedIndexBase(p, pass);
+        $("cBaseOut").textContent = exp.base;
+        $("cBaseParts").innerHTML = exp.meta.map((m) => '<code title="' + escHtml(m.value) + '">' + escHtml(m.label) + "</code>").join("");
+      }
+
+      const paint = () => {
+        const order = { e: 0, w: 1, o: 2, i: 3 };
+        const list = [...findings].sort((a, b) => order[a.lvl] - order[b.lvl]);
+        $("findings").innerHTML = list.map((f) =>
+          '<div class="find ' + f.lvl + '"><b>' + escHtml(f.title) + "</b><span>" + escHtml(f.text) + "</span></div>").join("");
+      };
+      const cyrillicNote = (sigConfirmed) => {
+        if (cyrillicShp.length && !sigConfirmed) {
+          find("w", "Кириллица в значении " + cyrillicShp.join(", "),
+            "В подписи — значение после одного раскодирования запроса.");
+        }
+      };
+
+      /* Подпись неподходящей длины ни одним алгоритмом не получить — перебор не нужен */
+      if (sig && pass && /^[0-9a-fA-F]+$/.test(sig) && SIG_LEN[sig.length]) {
+        chip.textContent = "подпись проверяется…";
+        paint();
+        state.checkDone = new Promise((resolve) => {
+          runMatrix(diagnoseIndexSignature(p, pass, sig), token, (res) => {
+            cyrillicNote(signatureFindings(res, pass, find, chip));
+            paint();
+            resolve();
+          });
+        });
+        return;
+      }
+      if (sig && !pass) find("i", "Подпись не проверялась", "Нужен Пароль #1.");
+      cyrillicNote(false);
+      paint();
+    }
+
+    /* Итог перебора → находки. Возвращает true, если подпись сошлась без замечаний. */
+    function signatureFindings(res, pass, find, chip) {
+      let sigConfirmed = false;
+      if (res.match) {
+        const m = res.match;
+        const deltas = [];
+        if (m.out.label !== "как пришло") deltas.push("OutSum подписан " + m.out.label);
+        if (m.inv.label !== "как пришло") deltas.push("InvId подписан " + m.inv.label);
+        const dropped = m.presentMods.filter((x) => !m.mc.subset.includes(x));
+        if (dropped.length) deltas.push("нет в подписи: " + dropped.join(", "));
+        if (m.extra.label) deltas.push(m.extra.label);
+        (m.mc.deltas || []).forEach((l) => deltas.push(l));
+        if (m.shp.dropped) {
+          deltas.push("Shp_* нет в подписи");
+        } else if (!m.shp.none) {
+          if (m.shp.order === "request") deltas.push("Shp_* не по алфавиту");
+          if (m.shp.order === "ordinal") deltas.push("Shp_* отсортированы по кодам символов, а не по алфавиту");
+          if (m.shp.wrongName) deltas.push("регистр имён Shp_* в подписи не как в запросе");
+          if (m.shp.wrongEnc) deltas.push(encDelta("Shp_*", m.shp.d));
+        }
+
+        if (!deltas.length) {
+          chip.className = "sig-chip ok";
+          chip.textContent = "подпись верна";
+          sigConfirmed = true;
+          $("cSigTitle").textContent = "Подпись — сошлась";
+          find("o", "Подпись сходится", ALGO_LABEL[m.algo] + ". Проблема не в подписи.");
+          if (m.algo !== "md5") {
+            find("i", "Алгоритм не MD5, а " + ALGO_LABEL[m.algo], "В настройках магазина должен быть тот же, иначе 29.");
+          }
+        } else {
+          chip.className = "sig-chip bad";
+          chip.textContent = "подпись не сходится";
+          find("e", "Подпись посчитана неверно", deltas.join("; ") + " (" + ALGO_LABEL[m.algo] + ").");
+          find("i", "Его база", m.base.replace(pass, "‹Пароль#1›"));
+        }
+      } else if (res.stopped) {
+        chip.className = "sig-chip na";
+        chip.textContent = "подпись не проверена";
+        find("w", "Перебор остановлен (" + res.tried + " вариантов)", "Слишком много комбинаций.");
+      } else {
+        chip.className = "sig-chip bad";
+        chip.textContent = "подпись не сходится";
+        find("e", "Подпись не сошлась (" + res.tried + " вариантов)", "Не тот пароль / контур, или запрос меняли после подписи.");
+      }
+      return sigConfirmed;
+    }
+
+    function setMode(mode) {
+      state.mode = mode;
+      $("buildMode").classList.toggle("hidden", mode !== "build");
+      $("checkMode").classList.toggle("hidden", mode !== "check");
+      [...$("modeSeg").children].forEach((b) => b.classList.toggle("on", b.dataset.mode === mode));
+    }
+
+    $("modeSeg").addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-mode]");
+      if (b) setMode(b.dataset.mode);
+    });
+    $("checkMode").addEventListener("input", renderCheck);
+    $("checkMode").addEventListener("change", renderCheck);
+    $("cTogglePass").onclick = () => {
+      const el = $("cPass1");
+      el.type = el.type === "password" ? "text" : "password";
+      $("cTogglePass").textContent = el.type === "password" ? "Показать" : "Скрыть";
+    };
+    $("resetCheck").onclick = () => {
+      $("rawIn").value = "";
+      $("cPass1").value = "";
+      $("cPass1").type = "password";
+      $("cTogglePass").textContent = "Показать";
+      renderCheck();
+    };
+    document.addEventListener("click", (e) => {
+      const b = e.target.closest("button[data-copy]");
+      if (b) copyText($(b.dataset.copy).textContent, b);
+    });
+
+    $("toBuilder").onclick = () => {
+      const p = state.parsed;
+      if (!p) return;
+      const get = (k) => p.pairs.find((x) => x.canon === k);
+      const v = (k) => { const g = get(k); return g ? (g.v == null ? g.rawV : g.v) : ""; };
+      $("resetBtn").click();
+
+      ["MerchantLogin", "OutSum", "InvId", "Description", "Email", "Encoding",
+       "IncCurrLabel", "FiscalParentOpId", "Token", "ResultUrl2"].forEach((k) => { $(k).value = v(k); });
+      if (["ru", "en"].includes(v("Culture"))) $("Culture").value = v("Culture");
+      $("IsTest").checked = String(v("IsTest")) === "1";
+      $("StepByStep").checked = String(v("StepByStep")).toLowerCase() === "true";
+      $("Recurring").checked = String(v("Recurring")).toLowerCase() === "true";
+      $("IsWithoutFreeSale").checked = String(v("IsWithoutFreeSale")).toLowerCase() === "true";
+
+      [["SuccessUrl2", "SuccessUrl2Method"], ["FailUrl2", "FailUrl2Method"]].forEach(([u, m]) => {
+        $(u).value = v(u);
+        const mm = String(v(m)).toUpperCase();
+        if (["GET", "POST"].includes(mm)) $(m).value = mm;
+      });
+
+      const expd = v("ExpirationDate");
+      const em = expd && expd.match(/^(\d{4}-\d{2}-\d{2})(?:[T ](\d{2}):(\d{2}))?/);
+      if (em) {
+        $("ExpirationDate").value = em[1];
+        $("ExpirationHH").value = em[2] || "";
+        $("ExpirationMM").value = em[3] || "";
+      }
+
+      /* В конструктор кладём сырые значения — кодированием он займётся сам */
+      const rcpt = get("Receipt");
+      if (rcpt) $("Receipt").value = rawOf(rcpt);
+      p.pairs.filter((x) => x.k === "PaymentMethods").forEach((x) => addPm(rawOf(x)));
+      p.pairs.filter((x) => x.shp).forEach((x) => addShp(x.k, rawOf(x)));
+
+      const sig = String(v("SignatureValue") || "").trim();
+      const algos = SIG_LEN[sig.length];
+      if (algos) $("HashAlgo").value = algos[0];
+      if ($("cPass1").value) $("Password1").value = $("cPass1").value;
+
+      setMode("build");
+      build();
+    };
+
+    state.selfTestFail = selfTest();
+    build();
+    renderCheck();
+  </script>
+</body>
+</html>
